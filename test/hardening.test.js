@@ -42,6 +42,28 @@ test('a database error is hidden from the panel; a plain error keeps its message
   assert.match(plain.error, /Unknown customer NOPE/);
 });
 
+test('a programming error is hidden from the panel', async () => {
+  const { db, edge } = await host();
+  const query = db.query;
+  const log = console.error; console.error = () => {};
+  try {
+    db.query = async (text, params) => {
+      if (/^\s*INSERT INTO expenses/i.test(text)) null.boom;
+      return query(text, params);
+    };
+    const r = await edge.api('addExpense', { category: 'Other', amount: 10, date: '2026-10-18', paidWith: '', note: 'x' });
+    assert.equal(r.ok, false);
+    assert.ok(!/null|boom|property/i.test(r.error), r.error);
+  } finally { console.error = log; }
+});
+
+test('the sign-in brake ignores a client-written x-forwarded-for entry', async () => {
+  const { edge } = await host({ APP_SECRET: 'right' });
+  const bad = (first) => post({ action: 'home' }, { 'X-Forwarded-For': first + ', 9.9.9.9', 'X-App-Secret': 'wrong' });
+  for (let i = 0; i < 10; i++) assert.equal((await edge.handle(bad('10.0.0.' + i))).status, 401);
+  assert.equal((await edge.handle(bad('10.0.0.99'))).status, 429);
+});
+
 test('every write takes the write lock; reads do not', async () => {
   const { db, edge } = await host();
   await edge.api('home', {});

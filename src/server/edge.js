@@ -245,6 +245,11 @@ async function api(action, payload, db) {
       console.error('api ' + action + ' failed:', err.code, err.message);
       return { ok: false, error: 'Could not save. Nothing was changed. Try again.' };
     }
+    // A bug (not a rule such as "Unknown customer") also stays in the log.
+    if (err instanceof TypeError || err instanceof ReferenceError || err instanceof RangeError || err instanceof SyntaxError) {
+      console.error('api ' + action + ' crashed:', err && err.stack);
+      return { ok: false, error: 'Something went wrong. Nothing was changed.' };
+    }
     return { ok: false, error: String((err && err.message) || err) };
   }
 }
@@ -423,7 +428,12 @@ var AUTH_FAILS_ = {};
 var AUTH_MAX_FAILS_ = 10;
 var AUTH_WINDOW_MS_ = 60000;
 function clientKey_(req) {
-  return String(req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown').split(',')[0].trim();
+  // Not the first x-forwarded-for entry: a client can write that one. cf-connecting-ip is set by the platform edge,
+  // and the last forwarded entry is the one the nearest proxy appended.
+  var cf = req.headers.get('cf-connecting-ip');
+  if (cf) return cf.trim();
+  var xff = String(req.headers.get('x-forwarded-for') || '').split(',');
+  return xff[xff.length - 1].trim() || 'unknown';
 }
 function authBlocked_(req) {
   var f = AUTH_FAILS_[clientKey_(req)];

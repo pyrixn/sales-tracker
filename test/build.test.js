@@ -10,10 +10,11 @@ const dirs = [];
 const tmp = () => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'st-build-')); dirs.push(d); return d; };
 test.after(() => dirs.forEach(d => fs.rmSync(d, { recursive: true, force: true })));
 
-test('writes index.html and config.js only', () => {
+test('writes index.html, config.js and the Pages _headers file only', () => {
   const outDir = tmp();
   buildSite({ outDir });
-  assert.deepEqual(fs.readdirSync(outDir).sort(), ['config.js', 'index.html']);
+  assert.deepEqual(fs.readdirSync(outDir).sort(), ['_headers', 'config.js', 'index.html']);
+  assert.match(fs.readFileSync(path.join(outDir, '_headers'), 'utf8'), /X-Frame-Options: DENY/);
   const html = fs.readFileSync(path.join(outDir, 'index.html'), 'utf8');
   assert.ok(!html.includes('google.script'), 'no Apps Script bridge');
   assert.ok(!html.includes('@@'), 'no build markers left');

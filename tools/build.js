@@ -51,6 +51,8 @@ function buildSite(opts) {
   const page = strip(buildIndex());
   fs.writeFileSync(path.join(outDir, 'index.html'), page);
   fs.writeFileSync(path.join(outDir, 'config.js'), 'window.API_BASE_URL = ' + JSON.stringify(url) + ';\n');
+  // Cloudflare Pages reads this file for response headers.
+  fs.writeFileSync(path.join(outDir, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  X-Frame-Options: DENY\n  Referrer-Policy: no-referrer\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n');
   return { files: ['index.html', 'config.js'].map(f => path.join(outDir, f)) };
 }
 
