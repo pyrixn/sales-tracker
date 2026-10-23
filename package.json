@@ -1,0 +1,22 @@
+{
+  "name": "sales-tracker-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "build": "node tools/build.js",
+    "preview": "wrangler pages dev dist",
+    "test:core": "node --test \"test/*.test.js\"",
+    "test:ui": "node tools/build.js && node --test test/ui/app.test.js",
+    "setup:ui": "npx playwright install chromium"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "supabase": "^2.122.0"
+  }
+}

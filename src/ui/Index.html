@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sales Tracker</title>
+<style>
+/* ── Design tokens: purple-slate admin (PRODUCT.md). --accent is for fills, --accent-fg for text and outlines ── */
+:root {
+  --bg:          #f8fafc;
+  --panel:       #ffffff;
+  --panel-2:     #f1f5f9;
+  --ink:         #090d16;
+  --muted:       #5b6678;
+  --line:        #e2e8f0;
+  --line-subtle: #f1f5f9;
+  --accent:      #5548eb;
+  --accent-dk:   #473fc7;
+  --accent-ink:  #ffffff;
+  --accent-fg:   #4338ca;
+  --accent-soft: #eef0ff;
+  --violet:      #8b5cf6;
+  --warn:        #b45309;
+  --warn-bg:     #fffbeb;
+  --bad:         #dc2626;
+  --bad-bg:      #fef2f2;
+  --ok:          #047857;
+  --ok-bg:       #ecfdf5;
+  --blue:        #2563eb;
+  --blue-bg:     #eff6ff;
+  --shadow-sm:   0 1px 2px 0 rgba(9, 13, 22, 0.05);
+  --shadow:      0 4px 12px -2px rgba(9, 13, 22, 0.08), 0 2px 4px -1px rgba(9, 13, 22, 0.05);
+  --shadow-lg:   0 12px 32px -4px rgba(9, 13, 22, 0.14), 0 4px 8px -2px rgba(9, 13, 22, 0.06);
+  --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+  --r:           10px;
+  --r-sm:        6px;
+  --sans:        system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+  --mono:        ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg:          #080b12;
+  --panel:       #0f1423;
+  --panel-2:     #141b2e;
+  --ink:         #f1f5f9;
+  --muted:       #94a3b8;
+  --line:        #1a2238;
+  --line-subtle: #131a2c;
+  --accent:      #5558e6;
+  --accent-dk:   #4649c9;
+  --accent-ink:  #ffffff;
+  --accent-fg:   #a5b4fc;
+  --accent-soft: rgba(99, 102, 241, 0.16);
+  --violet:      #a78bfa;
+  --warn:        #fbbf24;
+  --warn-bg:     #2e1d05;
+  --bad:         #f87171;
+  --bad-bg:      #3a1114;
+  --ok:          #34d399;
+  --ok-bg:       #0a3a2c;
+  --blue:        #60a5fa;
+  --blue-bg:     #172554;
+  --shadow-sm:   0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow:      0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg:   0 16px 40px rgba(0, 0, 0, 0.65);
+  color-scheme: dark;
+} }
+:root[data-theme="light"] {
+  --bg:          #f8fafc;
+  --panel:       #ffffff;
+  --panel-2:     #f1f5f9;
+  --ink:         #090d16;
+  --muted:       #5b6678;
+  --line:        #e2e8f0;
+  --line-subtle: #f1f5f9;
+  --accent:      #5548eb;
+  --accent-dk:   #473fc7;
+  --accent-ink:  #ffffff;
+  --accent-fg:   #4338ca;
+  --accent-soft: #eef0ff;
+  --violet:      #8b5cf6;
+  --warn:        #b45309;
+  --warn-bg:     #fffbeb;
+  --bad:         #dc2626;
+  --bad-bg:      #fef2f2;
+  --ok:          #047857;
+  --ok-bg:       #ecfdf5;
+  --blue:        #2563eb;
+  --blue-bg:     #eff6ff;
+  --shadow-sm:   0 1px 2px 0 rgba(9, 13, 22, 0.05);
+  --shadow:      0 4px 12px -2px rgba(9, 13, 22, 0.08), 0 2px 4px -1px rgba(9, 13, 22, 0.05);
+  --shadow-lg:   0 12px 32px -4px rgba(9, 13, 22, 0.14), 0 4px 8px -2px rgba(9, 13, 22, 0.06);
+  --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+  --r:           10px;
+  --r-sm:        6px;
+  --sans:        system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+  --mono:        ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg:          #080b12;
+  --panel:       #0f1423;
+  --panel-2:     #141b2e;
+  --ink:         #f1f5f9;
+  --muted:       #94a3b8;
+  --line:        #1a2238;
+  --line-subtle: #131a2c;
+  --accent:      #5558e6;
+  --accent-dk:   #4649c9;
+  --accent-ink:  #ffffff;
+  --accent-fg:   #a5b4fc;
+  --accent-soft: rgba(99, 102, 241, 0.16);
+  --violet:      #a78bfa;
+  --warn:        #fbbf24;
+  --warn-bg:     #2e1d05;
+  --bad:         #f87171;
+  --bad-bg:      #3a1114;
+  --ok:          #34d399;
+  --ok-bg:       #0a3a2c;
+  --blue:        #60a5fa;
+  --blue-bg:     #172554;
+  --shadow-sm:   0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow:      0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg:   0 16px 40px rgba(0, 0, 0, 0.65);
+  color-scheme: dark;
+}
+
+/* ── Reset ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); -webkit-text-size-adjust: 100%; overflow-x: hidden; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+input, textarea, select { caret-color: var(--accent-fg); accent-color: var(--accent); }
+* { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+a { text-underline-offset: 3px; }
+.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+.icon.sm { width: 16px; height: 16px; vertical-align: -2px; }
+.avatar { width: 34px; height: 34px; border-radius: 999px; flex: none; display: inline-grid; place-items: center; font-size: 12px; font-weight: 700; letter-spacing: 0; background: var(--accent-soft); color: var(--accent-fg); }
+.avatar.h1 { background: rgba(99,102,241,.16); color: var(--accent-fg); }
+.avatar.h2 { background: rgba(139,92,246,.16); color: var(--violet); }
+.avatar.h3 { background: var(--blue-bg); color: var(--blue); }
+.avatar.h4 { background: var(--ok-bg); color: var(--ok); }
+.avatar.h5 { background: var(--warn-bg); color: var(--warn); }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent-fg); }
+
+/* ── Layout shell ────────────────────────────────────────────────── */
+#shell { display: flex; flex-direction: column; height: 100%; }
+
+/* Sidebar (desktop) */
+#sidebar {
+  display: none;
+  width: 240px; flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: calc(20px + env(safe-area-inset-top,0px)) 12px 20px;
+  overflow-y: auto;
+}
+#sidebar .brand { padding: 0 12px 20px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+#sidebar .brand h1 { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; letter-spacing: -0.02em; }
+#sidebar .brand h1 .icon { color: var(--accent-fg); }
+#sidebar .brand small { color: var(--muted); font-size: 12px; font-weight: 500; }
+#sidebar nav { display: grid; gap: 4px; }
+#sidebar nav a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; font-weight: 500; font-size: 13px;
+  color: var(--muted); text-decoration: none; border-radius: var(--r-sm);
+  transition: background .12s cubic-bezier(0.16, 1, 0.3, 1), color .12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#sidebar nav a:hover { background: var(--accent-soft); color: var(--accent-fg); }
+#sidebar nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent-fg); font-weight: 600; }
+#sidebar nav a .icon { opacity: .9; }
+#sidebar .sidebar-actions { padding: 16px 0 0; display: grid; gap: 8px; border-top: 1px solid var(--line); margin-top: 16px; }
+
+/* Top bar (mobile only) */
+#topbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: calc(12px + env(safe-area-inset-top,0px)) 16px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+#topbar h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+#topbar .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Content area */
+#content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+#screen {
+  flex: 1;
+  padding: 16px max(16px, env(safe-area-inset-right,0px)) calc(80px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));
+  max-width: 960px; width: 100%; margin: 0 auto;
+  display: grid; gap: 16px; align-content: start;
+}
+
+/* Bottom tabs (mobile) */
+#tabs {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: grid; grid-template-columns: repeat(6,1fr);
+  background: var(--panel); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  z-index: 10;
+}
+@supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+  #tabs { background: color-mix(in srgb, var(--panel) 82%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+}
+#tabs button {
+  background: none; border: 0; padding: 8px 0 9px;
+  font-size: 11px; font-weight: 500; color: var(--muted); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  letter-spacing: -0.01em; transition: color .12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#tabs button .icon { width: 20px; height: 20px; }
+#tabs button { min-height: 52px; justify-content: center; }
+#tabs button[aria-current="page"] { color: var(--accent-fg); font-weight: 600; }
+
+/* ≥768px: switch to sidebar layout */
+@media (min-width: 768px) {
+  #shell { flex-direction: row; }
+  #sidebar { display: flex; flex-direction: column; }
+  #topbar { display: none; }
+  #tabs { display: none; }
+  #content { overflow-y: auto; }
+  #screen {
+    padding: 28px 36px;
+    padding-bottom: 48px;
+  }
+}
+
+/* ── KPI bar ──────────────────────────────────────────────────────── */
+/* ── Today summary and quick actions ─────────────────────────────── */
+.summary { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow-sm); overflow: hidden; }
+.sum-owed { width: 100%; display: grid; grid-template-columns: 1fr auto; grid-template-areas: "label chev" "val chev" "sub chev"; align-items: center; text-align: left; gap: 2px 12px; background: none; border: 0; padding: 14px 16px; cursor: pointer; color: inherit; transition: background .15s var(--ease); }
+.sum-owed:hover { background: var(--accent-soft); }
+.sum-label { grid-area: label; font-size: 12px; font-weight: 500; color: var(--muted); }
+.sum-val { grid-area: val; font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; }
+.sum-val.bad { color: var(--bad); }
+.sum-val.ok { color: var(--ok); }
+.sum-sub { grid-area: sub; font-size: 12px; color: var(--muted); }
+.sum-owed .icon { grid-area: chev; color: var(--muted); }
+.sum-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px 14px; border-top: 1px solid var(--line); }
+.sum-main { padding: 14px 16px; display: grid; gap: 2px; }
+.sum-main .sum-label, .sum-main .sum-val, .sum-main .sum-sub { grid-area: auto; }
+.sum-lines { border-top: 1px solid var(--line); padding: 4px 16px; display: grid; }
+.sum-lines > div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 13px; }
+.sum-lines > div + div { border-top: 1px solid var(--line-subtle); }
+.sum-lines span:first-child { color: var(--muted); }
+.sum-lines .num { font-weight: 600; }
+.num.ok, .sum-val.ok { color: var(--ok); }
+.num.bad { color: var(--bad); }
+.rate-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px 10px 14px; font-size: 13px; }
+.rate-line .icon { color: var(--muted); }
+.quick { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
+.quick .btn { width: 100%; min-height: 44px; padding-left: 8px; padding-right: 8px; }
+.row { min-height: 60px; }
+.row > .avatar { margin-right: -2px; }
+.row.due { align-items: flex-start; padding-top: 12px; padding-bottom: 12px; }
+.row.due .who small, .who.wrap small { white-space: normal; }
+.row.due .who .pill { justify-self: start; margin-top: 6px; }
+.due-r { display: grid; gap: 8px; justify-items: end; flex: none; }
+.due-r .num { font-weight: 700; font-size: 15px; }
+.kpi-bar { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+@media (min-width: 480px) { .kpi-bar { grid-template-columns: repeat(4,1fr); } }
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .12s cubic-bezier(0.16, 1, 0.3, 1), border-color .12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.kpi:hover { border-color: var(--accent); }
+.kpi .kpi-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+.kpi .kpi-val { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.kpi .kpi-val.bad { color: var(--bad); }
+.kpi .kpi-val.ok { color: var(--ok); }
+.kpi .kpi-val.warn { color: var(--warn); }
+.kpi .kpi-val.blue { color: var(--accent-fg); }
+
+/* ── Cards ────────────────────────────────────────────────────────── */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow-sm); }
+.card-head { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--panel); }
+.card-head h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
+.card-head h2 .icon { color: var(--muted); }
+.card-head .badge { background: var(--accent-soft); border: 1px solid transparent; border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: var(--accent-fg); }
+.card-body { padding: 14px 16px; display: grid; gap: 10px; }
+.card-body.tight { padding: 0; }
+
+/* ── Action buttons ───────────────────────────────────────────────── */
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn {
+  border: 1px solid var(--line); background: var(--panel); border-radius: var(--r-sm);
+  padding: 8px 14px; min-height: 40px; font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; justify-content: center;
+  text-decoration: none; color: var(--ink); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+  box-shadow: var(--shadow-sm); transition: all .12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn:hover { background: var(--bg); border-color: var(--line); color: var(--ink); }
+.btn:active { transform: scale(0.98); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 1px 2px rgba(9, 13, 22, 0.18); }
+.btn.primary:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.danger { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+.btn.danger:hover { background: var(--bad); color: #ffffff; }
+.btn.sm { padding: 5px 10px; min-height: 34px; font-size: 12px; border-radius: var(--r-sm); }
+.btn.xs { padding: 3px 8px; min-height: 28px; font-size: 11px; border-radius: var(--r-sm); }
+.btn.ghost { background: none; border-color: transparent; box-shadow: none; color: var(--muted); }
+.btn.ghost:hover { background: var(--panel-2); color: var(--ink); }
+.btn.icon-only { padding: 0; width: 40px; }
+.btn.sm.icon-only { width: 34px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.link { color: var(--accent-fg); font-weight: 600; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-size: 13px; min-height: 36px; }
+
+/* ── Table rows ───────────────────────────────────────────────────── */
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; padding: 11px 16px; }
+.row + .row { border-top: 1px solid var(--line); }
+.row.tap { cursor: pointer; transition: background .12s cubic-bezier(0.16, 1, 0.3, 1); }
+.row.tap:hover { background: var(--accent-soft); }
+.row .who .t { display: block; }
+.who { display: grid; min-width: 0; flex: 1; }
+.who b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; letter-spacing: -0.01em; }
+.who small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 14px; }
+.chips { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+/* ── Pills / badges ───────────────────────────────────────────────── */
+.pill { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; letter-spacing: 0.01em; }
+.pill.ok   { background: var(--ok-bg);   color: var(--ok); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.bad  { background: var(--bad-bg);  color: var(--bad); }
+.pill.blue { background: var(--accent-soft); color: var(--accent-fg); }
+.pill.muted{ background: var(--bg);      color: var(--muted); border: 1px solid var(--line); }
+
+/* ── Forms / sheets ───────────────────────────────────────────────── */
+.sheet { position: fixed; inset: 0; background: var(--bg); z-index: 20; display: flex; flex-direction: column; overflow: hidden; }
+@media (min-width: 520px) {
+  .sheet { inset: auto; right: 0; top: 0; bottom: 0; width: min(480px,100vw); box-shadow: var(--shadow-lg); border-left: 1px solid var(--line); }
+}
+.sheet-top { background: var(--panel); border-bottom: 1px solid var(--line); color: var(--ink); padding: calc(14px + env(safe-area-inset-top,0px)) 18px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 1; }
+.sheet-top button { background: none; border: 0; color: var(--muted); line-height: 1; cursor: pointer; padding: 8px; margin-left: -8px; border-radius: var(--r-sm); display: inline-grid; place-items: center; transition: color .12s, background .12s; }
+.sheet-top button:hover { color: var(--ink); background: var(--panel-2); }
+.sheet-top h2 { margin: 0; font-size: 16px; font-weight: 700; flex: 1; letter-spacing: -0.02em; }
+.sheet-body { flex: 1; overflow-y: auto; padding: 18px max(18px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px)); display: grid; gap: 14px; align-content: start; }
+/* The sheet's save button stays in reach however long the form is. */
+.sheet-body > #save { position: sticky; bottom: 0; z-index: 2; min-height: 48px; box-shadow: 0 0 0 14px var(--bg); }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field > label, .field > .lbl { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.01em; }
+input, select, textarea { width: 100%; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 12px; font-size: 13px; transition: border-color .12s, box-shadow .12s; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all .12s cubic-bezier(0.16, 1, 0.3, 1); }
+.chip:hover { border-color: var(--accent); color: var(--accent-fg); }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.stepper { display: grid; grid-template-columns: 36px 1fr 36px; gap: 6px; }
+.stepper input { text-align: center; }
+.search-box { position: relative; }
+.search-box input { padding-left: 32px; }
+.search-box::before { content: ""; position: absolute; left: 11px; top: 50%; width: 16px; height: 16px; margin-top: -8px; pointer-events: none; background: var(--muted);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.5-4.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.5-4.5'/%3E%3C/svg%3E") center / contain no-repeat; }
+.suggest { border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--panel); overflow: hidden; box-shadow: var(--shadow); }
+.suggest [role="option"] { padding: 9px 12px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); font-size: 13px; }
+.suggest [role="option"]:first-child { border-top: 0; }
+.suggest [role="option"]:hover, .suggest [role="option"][aria-selected="true"] { background: var(--accent-soft); color: var(--accent-fg); }
+.error-box { background: var(--bad-bg); color: var(--bad); border-radius: var(--r-sm); padding: 10px 12px; font-weight: 600; font-size: 13px; border: 1px solid var(--bad); }
+.note-box { background: var(--accent-soft); border-radius: var(--r-sm); padding: 10px 12px; font-size: 13px; color: var(--accent-fg); border: 1px solid var(--accent); }
+.muted-note { color: var(--muted); font-size: 12px; }
+
+/* ── Toast ────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(72px + env(safe-area-inset-bottom,0px));
+  background: var(--ink); color: var(--bg);
+  border-radius: var(--r); padding: 10px 16px;
+  display: flex; gap: 12px; align-items: center;
+  z-index: 50; box-shadow: var(--shadow-lg);
+  max-width: calc(100vw - 32px); font-size: 13px; font-weight: 500;
+  border: 1px solid var(--line);
+}
+.toast button { background: none; border: 0; color: var(--accent-fg); font-weight: 700; cursor: pointer; white-space: nowrap; min-height: 32px; padding: 0 4px; }
+@media (min-width: 768px) { .toast { bottom: 24px; } }
+
+/* ── Skeleton / empty ─────────────────────────────────────────────── */
+.skeleton { color: var(--muted); text-align: center; padding: 40px 0; font-size: 14px; }
+.empty { color: var(--muted); font-size: 13px; padding: 16px; text-align: center; }
+
+/* ── Search / filter bar ──────────────────────────────────────────── */
+.filter-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filter-bar input[type="search"] { flex: 1; min-width: 140px; }
+.filter-bar select { width: auto; min-width: 110px; }
+
+/* ── Misc ─────────────────────────────────────────────────────────── */
+.big-num { font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+.section-title { font-size: 12px; font-weight: 600; color: var(--muted); padding: 0 0 6px; }
+details summary { cursor: pointer; color: var(--accent-fg); font-weight: 600; font-size: 13px; padding: 8px 16px; }
+@media (prefers-reduced-motion: no-preference) {
+  .sheet { animation: slideIn .22s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes slideIn { from { transform: translateX(32px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+}
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17.5 14c2.6.2 4.5 2.1 4.5 5"/></symbol><symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16" cy="14.5" r="1.2"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 19.5v-15"/></symbol><symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 17v-6a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></symbol><symbol id="i-inbox" viewBox="0 0 24 24"><path d="m3 13 3-8h12l3 8"/><path d="M3 13v6h18v-6h-5l-1 2H9l-1-2z"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4L4 9"/><path d="M4 4v5h5"/><path d="M4 13a8 8 0 0 0 14 4l2-2"/><path d="M20 20v-5h-5"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/></symbol><symbol id="i-exchange" viewBox="0 0 24 24"><path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/></symbol><symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 6h11v10H2z"/><path d="M13 9h4l4 4v3h-8z"/><circle cx="6.5" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/></symbol><symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/></symbol><symbol id="i-box" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4v10l-9 4-9-4z"/><path d="m3 7 9 4 9-4M12 11v10"/></symbol><symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol><symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/></symbol><symbol id="i-gamepad" viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="11" rx="4"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="16" cy="11.5" r="1"/><circle cx="18.5" cy="14" r="1"/></symbol><symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol><symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M4 20l1.3-4.1A8 8 0 1 1 8.2 18.8z"/><path d="M9.5 9.5c.3 2 2 3.7 4 4l1.2-1.2 2 1c-.3 1.3-1.4 2-2.7 1.8-3-.5-5.3-2.8-5.8-5.8-.2-1.3.5-2.4 1.8-2.7l1 2z"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol><symbol id="i-skip" viewBox="0 0 24 24"><path d="m6 6 8 6-8 6z"/><path d="M18 6v12"/></symbol><symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol></defs></svg>
+<div id="shell">
+  <!-- Sidebar: visible ≥768px -->
+  <aside id="sidebar">
+    <div class="brand">
+      <h1><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg> Sales Tracker</h1>
+      <small id="sbDate"></small>
+    </div>
+    <nav id="sbNav"></nav>
+    <div class="sidebar-actions">
+      <button class="btn primary" id="sbNew"><svg class="icon sm" aria-hidden="true"><use href="#i-plus"/></svg> New sale</button>
+      <button class="btn" id="sbPay">Got paid</button>
+      <button class="btn" id="sbRenew">Renew</button>
+    </div>
+  </aside>
+
+  <div id="content">
+    <!-- Top bar: mobile only -->
+    <header id="topbar">
+      <div>
+        <h1 id="pageTitle">Sales Tracker</h1>
+        <div class="sub" id="pageSub"></div>
+      </div>
+      <div id="topActions"></div>
+    </header>
+
+    <main id="screen"><div class="skeleton">Loading…</div></main>
+
+    <!-- Bottom tabs: mobile only -->
+    <nav id="tabs" aria-label="Sections">
+      <button data-tab="today"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>Today</button>
+      <button data-tab="customers"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg>Customers</button>
+      <button data-tab="dues"><svg class="icon" aria-hidden="true"><use href="#i-wallet"/></svg>Dues</button>
+      <button data-tab="profit"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>Profit</button>
+      <button data-tab="book"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Book</button>
+      <button data-tab="more"><svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg>More</button>
+    </nav>
+  </div>
+</div>
+<div id="sheetHost"></div>
+<div id="toastHost" aria-live="polite"></div>
+<script src="config.js"></script>
+<script>/*@@CORE_UTIL@@*/</script>
+<script>
+(function () {
+  'use strict';
+  var U = Core.util;
+  var S = { tab: 'today', lookups: null, home: null, today: '' };
+  // Icon from the inline sprite (stroke icons, currentColor). Names match the symbols declared at the top of <body>.
+  function ic(name, cls) { return '<svg class="icon' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
+  // Stable tint per name so a customer keeps the same avatar colour everywhere.
+  function avatar(name) {
+    var s = String(name || '?').trim(), h = 0, i;
+    for (i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 5;
+    var parts = s.split(/\s+/).filter(Boolean), ini = (parts[0] ? parts[0].charAt(0) : '?') + (parts[1] ? parts[1].charAt(0) : '');
+    return '<span class="avatar h' + (h + 1) + '" aria-hidden="true">' + esc(ini.toUpperCase()) + '</span>';
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
+  var ESC_RE = /[&<>"']/g;
+  var ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  function esc(s) { return String(s === null || s === undefined ? '' : s).replace(ESC_RE, function (c) { return ESC_MAP[c]; }); }
+  var TK_FMT = null;
+  var TK_FMT2 = null;
+  try { TK_FMT = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }); TK_FMT2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } catch (e) {}
+  function tk(n) {
+    var v = Math.round(Number(n || 0) * 100) / 100;
+    var f = Number.isInteger(v) ? TK_FMT : TK_FMT2, a = Math.abs(v);
+    return (v < 0 ? '−' : '') + '৳' + (f ? f.format(a) : String(a));
+  }
+  // Shared at-a-glance card: one headline figure, optional detail lines (used by Profit and Book).
+  function summaryCard(label, value, cls, sub, lines) {
+    return '<section class="summary"><div class="sum-main"><span class="sum-label">' + esc(label) + '</span>' +
+      '<span class="sum-val ' + cls + '">' + value + '</span>' + (sub ? '<span class="sum-sub">' + sub + '</span>' : '') + '</div>' +
+      (lines && lines.length ? '<div class="sum-lines">' + lines.map(function (l) {
+        return '<div><span>' + esc(l[0]) + '</span><span class="num ' + (l[2] || '') + '">' + l[1] + '</span></div>';
+      }).join('') + '</div>' : '') + '</section>';
+  }
+  function debounce(fn, ms) {
+    var t = null;
+    return function () { var s = this, a = arguments; clearTimeout(t); t = setTimeout(function () { fn.apply(s, a); }, ms || 120); };
+  }
+  function rid() { try { return crypto.randomUUID(); } catch (e) { return 'r' + Date.now() + Math.random().toString(36).slice(2); } }
+  function call(action, payload) {
+    // Supabase Edge Function; URL from config.js
+    var apiBase = window.API_BASE_URL;
+    if (!apiBase) return Promise.resolve({ ok: false, error: 'API URL not configured.' });
+    var headers = { 'Content-Type': 'application/json' };
+    try {
+      var s = localStorage.getItem('sales_tracker_secret');
+      if (s) headers['X-App-Secret'] = s;
+    } catch (e) {}
+    return fetch(apiBase, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ action: action, payload: payload || {} })
+    }).then(function (r) {
+      return r.json().catch(function () { return { ok: false, error: 'Bad response (' + r.status + ')' }; });
+    }).catch(function (e) {
+      return { ok: false, error: (e && e.message) || 'Network error' };
+    });
+  }
+  function daysPill(d) {
+    if (d === null || d === undefined) return '<span class="pill muted">no date</span>';
+    if (d < 0) return '<span class="pill bad">expired ' + (-d) + 'd</span>';
+    if (d === 0) return '<span class="pill warn">today</span>';
+    if (d <= 3) return '<span class="pill warn">in ' + d + 'd</span>';
+    if (d <= 7) return '<span class="pill warn">' + d + ' days</span>';
+    return '<span class="pill ok">' + d + ' days</span>';
+  }
+  function productShort(name) { return String(name || '').split(' ')[0]; }
+  function customerById(id) { return (S.lookups.customers || []).filter(function (c) { return c.id === id; })[0]; }
+  function productById(id) { return (S.lookups.products || []).filter(function (p) { return p.id === id; })[0]; }
+
+  // ── Toast ─────────────────────────────────────────────────────────
+  var toastTimer = null;
+  function toast(msg, opts) {
+    var host = $('#toastHost');
+    host.innerHTML = '<div class="toast" data-testid="toast" role="status"><span>' + esc(msg) + '</span>' +
+      (opts && opts.undo ? '<button type="button">Undo</button>' : '') + '</div>';
+    var b = $('button', host);
+    if (b) b.onclick = function () {
+      b.disabled = true;
+      call('undo', { requestId: rid() }).then(function (r) { toast(r.ok ? r.data.message.replace(/^Undone: .*/, 'Undone') : r.error); refresh(); });
+    };
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { host.innerHTML = ''; }, opts && opts.undo ? 10000 : 4000);
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────
+  var NAV = [
+    { tab: 'today',     label: 'Today',     ico: 'home' },
+    { tab: 'customers', label: 'Customers', ico: 'users' },
+    { tab: 'dues',      label: 'Dues',      ico: 'wallet' },
+    { tab: 'profit',    label: 'Profit',    ico: 'chart' },
+    { tab: 'book',      label: 'Book',      ico: 'book' },
+    { tab: 'more',      label: 'More',      ico: 'grid' }
+  ];
+
+  function buildSidebar() {
+    var nav = $('#sbNav');
+    nav.innerHTML = NAV.map(function (n) {
+      return '<a href="#" data-tab="' + n.tab + '">' + ic(n.ico) + n.label + '</a>';
+    }).join('');
+    $$('a[data-tab]', nav).forEach(function (a) { a.onclick = function (e) { e.preventDefault(); go(a.getAttribute('data-tab')); }; });
+    $('#sbNew').onclick = function () { openNewSale(); };
+    $('#sbPay').onclick = function () { openPay(); };
+    $('#sbRenew').onclick = function () { openRenew(); };
+  }
+
+  function setSidebarActive(tab) {
+    $$('a[data-tab]', $('#sbNav')).forEach(function (a) {
+      if (a.getAttribute('data-tab') === tab) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    $$('button[data-tab]', $('#tabs')).forEach(function (b) {
+      if (b.getAttribute('data-tab') === tab) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    });
+  }
+
+  $$('button[data-tab]', $('#tabs')).forEach(function (b) { b.onclick = function () { go(b.getAttribute('data-tab')); }; });
+  buildSidebar();
+
+  function go(tab, arg) {
+    S.tab = tab; S.arg = arg;
+    setSidebarActive(tab);
+    $('#pageTitle').textContent = { today: 'Today', customers: 'Customers', dues: 'Dues', profit: 'Profit', book: 'Account book', more: 'More' }[tab] || tab;
+    $('#pageSub').textContent = '';
+    $('#screen').innerHTML = '<div class="skeleton">Loading…</div>';
+    window.scrollTo(0, 0);
+    (SCREENS[tab] || SCREENS.today)(arg);
+  }
+
+  // Rate display. rate = lookups.rate: { rate, source: 'manual'|'bybit'|'none', fetchedAt, stale }.
+  function rateText(r) {
+    if (!r || !r.rate) return 'No rate';
+    var how = r.source === 'manual' ? 'manual' : 'Bybit';
+    var age = '';
+    if (r.source === 'bybit' && r.fetchedAt) {
+      var m = Math.max(0, Math.round((Date.now() - Date.parse(r.fetchedAt)) / 60000));
+      age = ' · ' + (m < 1 ? 'just now' : m < 60 ? m + 'm ago' : Math.round(m / 60) + 'h ago');
+    }
+    return '৳' + r.rate + ' / USDT · ' + how + age + (r.stale ? ' · stale' : '');
+  }
+  var rateTried = false, snapTried = false;
+  function maybeRefreshRate(r) {
+    if (rateTried || !r || r.source === 'manual' || !r.stale) return;
+    rateTried = true;
+    call('refreshRate', {}).then(function (x) { if (x && x.ok) loadData().then(function () { if (S.tab === 'profit' || S.tab === 'more') go(S.tab, S.arg); }); });
+  }
+  function refresh() { return loadData().then(function () { go(S.tab, S.arg); }); }
+  function refreshQuiet() { if (S.tab === 'today') SCREENS.today(); }
+
+  // ── Initial data load (one round-trip: init = home + lookups) ─────
+  function loadData() {
+    return call('init').then(function (r) {
+      if (!r.ok) return r;
+      S.lookups = r.data.lookups;
+      maybeRefreshRate(S.lookups.rate);
+      if (!snapTried) { snapTried = true; call('snapshotIfDue', {}); }
+      S.home = r.data.home;
+      S.today = S.home.today;
+      $('#sbDate').textContent = new Date(S.today + 'T00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      return r;
+    });
+  }
+
+  // ── Screens ───────────────────────────────────────────────────────
+  var SCREENS = {};
+
+  // TODAY ─────────────────────────────────────────────────────────────
+  SCREENS.today = function () {
+    if (!S.home) return;
+    var h = S.home;
+    var dateStr = new Date(h.today + 'T00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    $('#pageSub').textContent = dateStr;
+
+    var L = S.lookups;
+    var activeSubs = (L.lines || []).length;
+    var expiring = h.renewSoon.length;
+    var expired = h.expired.length;
+
+    var html = '';
+
+    // Summary: what is owed (taps through to Dues) and the counts that need a look
+    html += '<section class="summary" aria-label="Today at a glance">' +
+      '<button type="button" class="sum-owed" data-go="dues"><span class="sum-label">Owed to you</span>' +
+      '<span class="sum-val ' + (h.owed ? 'bad' : 'ok') + '" data-testid="today-owed">' + tk(h.owed) + '</span>' +
+      '<span class="sum-sub">' + (h.owed ? 'See who owes' : 'Nobody owes you anything') + '</span>' + ic('chevron-right') + '</button>' +
+      '<div class="sum-chips">' +
+      '<span class="pill ' + (expiring ? 'warn' : 'muted') + '">' + expiring + ' expiring soon</span>' +
+      '<span class="pill ' + (expired ? 'bad' : 'muted') + '">' + expired + ' expired</span>' +
+      '<span class="pill muted">' + activeSubs + ' active</span></div></section>';
+
+    // Quick actions: mobile only (the sidebar has them on desktop)
+    html += '<div class="quick" id="quickActs" style="display:none">' +
+      '<button class="btn primary" data-act="new">' + ic('plus', 'sm') + 'New sale</button>' +
+      '<button class="btn" data-act="pay">' + ic('wallet', 'sm') + 'Got paid</button>' +
+      '<button class="btn" data-act="renew">' + ic('refresh', 'sm') + 'Renew</button>' +
+      '</div>';
+
+    // Payment inbox (bKash, Nagad, Upay)
+    if (h.unmatched.length) {
+      html += '<div class="card"><div class="card-head"><h2>' + ic('inbox') + 'Payments not matched</h2><span class="badge">' + h.unmatched.length + '</span></div><div class="card-body tight">' +
+        h.unmatched.map(function (u) {
+          return '<div class="row"><span class="avatar h4" aria-hidden="true">' + ic('inbox', 'sm') + '</span><div class="who"><b>' + tk(u.amount) + ' from ' + esc(u.sender || 'unknown') + '</b><small>' + esc(u.trx) + ' · ' + esc(u.received) + (u.reference ? ' · ref ' + esc(u.reference) : '') + (u.status === 'Review' ? ' · needs review' : '') + '</small></div><button class="btn sm primary" data-match="' + esc(u.trx) + '">Match</button></div>';
+        }).join('') + '</div></div>';
+    }
+
+    // Reminders
+    if (h.reminders.length) {
+      html += '<div class="card"><div class="card-head"><h2>' + ic('bell') + 'Reminders to send</h2><span class="badge">' + h.reminders.length + '</span></div><div class="card-body tight">' +
+        h.reminders.slice(0, 5).map(remindRow).join('') +
+        (h.reminders.length > 5 ? '<div id="moreRem" hidden>' + h.reminders.slice(5).map(remindRow).join('') + '</div>' +
+          '<div style="padding:8px 16px"><button class="link" id="showRem">Show all ' + h.reminders.length + '</button></div>' : '') +
+        '</div></div>';
+    }
+
+    // Renew soon
+    html += '<div class="card"><div class="card-head"><h2>' + ic('clock') + 'Renew soon</h2><span class="badge">' + h.renewSoon.length + '</span></div><div class="card-body tight">' +
+      (h.renewSoon.length ? h.renewSoon.map(function (x) { return lineRow(x, x.owes ? 'owes ' + tk(x.owes) : x.accountId); }).join('') : '<div class="empty">Nobody expiring soon.</div>') +
+      '</div></div>';
+
+    // Expired
+    if (h.expired.length) {
+      html += '<div class="card"><div class="card-head"><h2>' + ic('x-circle') + 'Expired, not renewed</h2><span class="badge">' + h.expired.length + '</span></div><div class="card-body tight">' +
+        h.expired.map(function (x) { return lineRow(x, (x.owes ? 'owes ' + tk(x.owes) + ' · ' : '') + x.accountId); }).join('') +
+        '</div></div>';
+    }
+
+    // Auto-matched
+    if (h.autoToCheck && h.autoToCheck.length) {
+      html += '<div class="card"><div class="card-head"><h2>' + ic('check-circle') + 'Auto-matched payments</h2><span class="badge">check</span></div><div class="card-body tight">' +
+        h.autoToCheck.map(function (a) {
+          return '<div class="row tap" data-cust="' + esc(a.customerId) + '"><div class="who"><b>' + esc(a.name) + '</b><small>' + esc(a.date) + ' · ' + esc(a.trx) + '</small></div><span class="num">' + tk(a.amount) + '</span></div>';
+        }).join('') + '</div></div>';
+    }
+
+    $('#screen').innerHTML = html;
+
+    // show quick-acts only on mobile
+    var qa = $('#quickActs');
+    if (window.innerWidth < 768) qa.style.display = 'grid';
+
+    wireCommon($('#screen'));
+    if ($('#showRem')) $('#showRem').onclick = function () { $('#moreRem').hidden = false; this.remove(); };
+    var ae = $('#quickActs');
+    if (ae) $$('[data-act]', ae).forEach(function (b) {
+      b.onclick = function () { var a = b.getAttribute('data-act'); if (a === 'new') openNewSale(); else if (a === 'pay') openPay(); else openRenew(); };
+    });
+    $$('[data-match]', $('#screen')).forEach(function (b) { b.onclick = function () { openMatch(b.getAttribute('data-match')); }; });
+    $$('[data-go]', $('#screen')).forEach(function (b) { b.onclick = function () { go(b.getAttribute('data-go')); }; });
+  };
+
+  function lineRow(x, sub) {
+    return '<div class="row tap" data-cust="' + esc(x.customerId) + '">' + avatar(x.name) + '<div class="who"><b>' + esc(x.name) + '</b><small>' + esc(productShort(x.productName)) + ' · ' + esc(sub || '') + '</small></div>' + daysPill(x.daysLeft) + '</div>';
+  }
+
+  function remindRow(it) {
+    var label = { before: 'ends soon', on_day: 'ends today', after: 'expired', due: 'owes ' + tk(it.amount) }[it.kind];
+    var action;
+    if (it.link && it.channel === 'WhatsApp')
+      action = '<a class="btn sm primary" data-testid="remind-link" target="_blank" rel="noopener" href="' + esc(it.link) + '" data-remind=\'' + esc(JSON.stringify(it)) + '\'>' + ic('whatsapp', 'sm') + 'Remind</a>';
+    else
+      action = '<button class="btn sm" data-copy=\'' + esc(JSON.stringify(it)) + '\'>' + ic('copy', 'sm') + (it.channel === 'Messenger' ? 'Copy + open' : 'Copy') + '</button>';
+    return '<div class="row">' + avatar(it.name) + '<div class="who wrap"><b>' + esc(it.name) + '</b><small>' + esc(productShort(it.productName)) + ' · ' + esc(label) + (it.channel ? ' · ' + esc(it.channel) : ' · no contact') + '</small></div>' +
+      '<div class="chips">' + action + '<button class="btn sm ghost icon-only" data-skip=\'' + esc(JSON.stringify(it)) + '\' title="Skip this reminder" aria-label="Skip this reminder">' + ic('skip', 'sm') + '</button></div></div>';
+  }
+
+  function markReminder(it, status) { return call('remindSent', { requestId: rid(), saleId: it.saleId, customerId: it.customerId, kind: it.kind, channel: it.channel, status: status }); }
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return false; });
+    return Promise.resolve(false);
+  }
+
+  function wireCommon(root) {
+    $$('[data-cust]', root).forEach(function (el) { el.onclick = function () { openCustomer(el.getAttribute('data-cust')); }; });
+    $$('[data-remind]', root).forEach(function (a) {
+      a.addEventListener('click', function () { var it = JSON.parse(a.getAttribute('data-remind')); markReminder(it, 'sent').then(function () { toast('Marked as sent'); }); });
+    });
+    $$('[data-copy]', root).forEach(function (b) {
+      b.onclick = function () {
+        var it = JSON.parse(b.getAttribute('data-copy'));
+        var win = it.link ? window.open(it.link, '_blank', 'noopener') : null;
+        copyText(it.message).then(function (copied) {
+          if (!copied) showMessage(it.message);
+          markReminder(it, 'sent').then(function () { toast(copied ? 'Message copied' + (win ? ', paste in Messenger' : '') : 'Copy the message shown'); refreshQuiet(); });
+        });
+      };
+    });
+    $$('[data-skip]', root).forEach(function (b) {
+      b.onclick = function () { var it = JSON.parse(b.getAttribute('data-skip')); markReminder(it, 'skipped').then(function () { toast('Skipped'); refreshQuiet(); }); };
+    });
+  }
+
+  function showMessage(text) {
+    var body = openSheet('Message', '<div class="field"><label for="msgText">Select and copy this message</label><textarea id="msgText" rows="7">' + esc(text) + '</textarea></div>');
+    var ta = $('#msgText', body); ta.focus(); ta.select();
+  }
+
+  // CUSTOMERS ─────────────────────────────────────────────────────────
+  SCREENS.customers = function () {
+    var list = S.lookups.customers;
+    var owingCount = list.filter(function (c) { return c.owes > 0; }).length;
+    $('#pageSub').textContent = list.length + ' customers · ' + owingCount + ' owe';
+    $('#screen').innerHTML =
+      '<div class="filter-bar">' +
+      '<div class="search-box" style="flex:1"><input id="custSearch" type="search" placeholder="Search customers" autocomplete="off" aria-label="Search customers"></div>' +
+      '<select id="custSort"><option value="name">A – Z</option><option value="owes">Owes most</option><option value="recent">Recent first</option></select>' +
+      '</div>' +
+      '<div class="card"><div class="card-head"><h2>All customers</h2><span class="badge" id="custCount">' + list.length + '</span></div><div class="card-body tight" id="custList"></div></div>';
+    var input = $('#custSearch'), sortSel = $('#custSort');
+    function draw() {
+      var q = input.value.trim().toLowerCase();
+      var sortMode = sortSel.value;
+      var rows = list.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q) >= 0 || String(c.handle).toLowerCase().indexOf(q) >= 0; });
+      if (sortMode === 'owes') rows = rows.slice().sort(function (a, b) { return b.owes - a.owes; });
+      else if (sortMode === 'recent') rows = rows.slice().reverse();
+      var shown = rows.slice(0, 100);
+      $('#custCount').textContent = shown.length + (rows.length > 100 ? '+' : '');
+      $('#custList').innerHTML = shown.length ? shown.map(function (c) {
+        return '<div class="row tap" data-cust="' + esc(c.id) + '">' + avatar(c.name) +
+          '<div class="who"><b>' + esc(c.name) + '</b><small>' + esc(c.channel ? c.channel + ' · ' + c.handle : 'no contact') + '</small></div>' +
+          (c.owes ? '<span class="pill bad">owes ' + tk(c.owes) + '</span>' : c.credit ? '<span class="pill ok">credit ' + tk(c.credit) + '</span>' : '') +
+          '</div>';
+      }).join('') : '<div class="empty">No customer matches.</div>';
+      wireCommon($('#custList'));
+    }
+    input.oninput = debounce(draw); sortSel.onchange = draw; draw();
+  };
+
+  // DUES ─────────────────────────────────────────────────────────────
+  SCREENS.dues = function () {
+    call('dues').then(function (r) {
+      if (!r.ok) return fail(r);
+      var d = r.data, sort = 'late';
+      $('#pageSub').textContent = d.rows.length + ' unpaid · ' + tk(d.total);
+      $('#screen').innerHTML =
+        '<div class="filter-bar">' +
+        '<div class="search-box" style="flex:1"><input id="dueSearch" type="search" placeholder="Name, ref or product…" autocomplete="off" aria-label="Search"></div>' +
+        '<select id="dueSort"><option value="late">Oldest first</option><option value="amount">Largest first</option><option value="name">Name A–Z</option></select>' +
+        '</div>' +
+        '<div class="card"><div class="card-head"><h2>' + ic('wallet') + 'Owed to you</h2><span class="badge">' + tk(d.total) + '</span></div><div class="card-body tight" data-testid="dues-list" id="dueRows"></div></div>' +
+        (d.credits.length ? '<div class="card"><div class="card-head"><h2>' + ic('refresh') + 'Credit you hold</h2></div><div class="card-body tight">' + d.credits.map(function (c) {
+          return '<div class="row tap" data-cust="' + esc(c.customerId) + '"><div class="who"><b>' + esc(c.name) + '</b><small>used on next renewal</small></div><span class="num">' + tk(c.amount) + '</span></div>';
+        }).join('') + '</div></div>' : '');
+
+      function draw() {
+        var q = ($('#dueSearch').value || '').trim().toLowerCase();
+        var rows = d.rows.filter(function (x) {
+          return !q || x.name.toLowerCase().indexOf(q) >= 0 || String(x.subCode).toLowerCase().indexOf(q) >= 0 || String(x.productName).toLowerCase().indexOf(q) >= 0;
+        }).slice();
+        rows.sort(function (a, b) {
+          if (sort === 'amount') return b.amount - a.amount;
+          if (sort === 'name') return String(a.name).toLowerCase() < String(b.name).toLowerCase() ? -1 : 1;
+          if (a.daysLate === null && b.daysLate !== null) return 1;
+          if (b.daysLate === null && a.daysLate !== null) return -1;
+          return (b.daysLate || 0) - (a.daysLate || 0) || b.amount - a.amount;
+        });
+        $('#dueRows').innerHTML = rows.length ? rows.map(function (x) {
+          var late = x.daysLate === null ? 'no date' : x.daysLate > 0 ? x.daysLate + 'd late' : 'not due yet';
+          var latePill = x.daysLate > 0 ? '<span class="pill bad">' + late + '</span>' : '<span class="pill muted">' + late + '</span>';
+          return '<div class="row due">' + avatar(x.name) + '<div class="who tap" data-cust="' + esc(x.customerId) + '"><b>' + esc(x.name) + '</b><small>' +
+            esc(productShort(x.productName)) + ' · ref ' + esc(x.subCode) + '</small>' + latePill + '</div>' +
+            '<div class="due-r"><span class="num">' + tk(x.amount) + '</span><div class="chips">' +
+            (x.payToken ? '<button class="btn sm" data-paylink="' + esc(x.payToken) + '" title="Copy payment link" aria-label="Copy payment link">' + ic('link', 'sm') + '</button>' : '') +
+            '<button class="btn sm primary" data-testid="due-pay" data-pay-cust="' + esc(x.customerId) + '" data-pay-sale="' + x.saleId + '" data-pay-amt="' + x.amount + '">' + ic('check-circle', 'sm') + 'Paid</button>' +
+            '</div></div></div>';
+        }).join('') : '<div class="empty">' + (q ? 'No dues match.' : 'Nobody owes you anything.') + '</div>';
+        wireCommon($('#dueRows'));
+        $$('[data-paylink]', $('#dueRows')).forEach(function (b) {
+          b.onclick = function (e) {
+            e.stopPropagation();
+            var sc = b.getAttribute('data-paylink');
+            var base = ((S.lookups.settings && S.lookups.settings.pay_base_url) || window.location.origin).replace(/\/+$/, '');
+            var url = base + '/pay/' + encodeURIComponent(sc);
+            try { navigator.clipboard.writeText(url); toast('Copied payment link'); } catch (err) { toast(url); }
+          };
+        });
+        $$('[data-pay-cust]', $('#dueRows')).forEach(function (b) {
+          b.onclick = function (e) {
+            e.stopPropagation();
+            openPay({ customerId: b.getAttribute('data-pay-cust'), saleId: b.getAttribute('data-pay-sale'), amount: Number(b.getAttribute('data-pay-amt')) });
+          };
+        });
+      }
+      $('#dueSearch').oninput = debounce(draw);
+      $('#dueSort').onchange = function () { sort = this.value; draw(); };
+      wireCommon($('#screen'));
+      draw();
+    });
+  };
+
+  // PROFIT ───────────────────────────────────────────────────────────
+  SCREENS.profit = function () {
+    call('profit').then(function (r) {
+      if (!r.ok) return fail(r);
+      var fams = (r.data && r.data.families) || [];
+      var totalRev = fams.reduce(function (a, f) { return a + Number(f.revenue || 0); }, 0);
+      var totalCost = fams.reduce(function (a, f) { return a + Number(f.cost || 0); }, 0);
+      var totalProfit = totalRev - totalCost;
+      var totalMargin = totalRev > 0 ? Math.round(totalProfit / totalRev * 10000) / 100 : 0;
+      var rate = S.lookups && S.lookups.rate;
+      var rateMissing = fams.some(function (f) { return f.rateMissing; });
+
+      $('#pageSub').textContent = 'All recorded sales';
+      $('#screen').innerHTML =
+        summaryCard('Net profit', tk(totalProfit), totalProfit >= 0 ? 'ok' : 'bad', 'Margin ' + totalMargin + '%',
+          [['Revenue', tk(totalRev), 'ok'], ['Cost', tk(totalCost), 'bad']]) +
+        (rateMissing ? '<div class="error-box" data-testid="rate-missing">Rate missing: USDT costs count as 0, so profit is incomplete. Set a manual rate in Settings.</div>' : '') +
+        '<div class="rate-line" data-testid="rate-line"><span>' + ic('exchange', 'sm') + ' <b>' + esc(rateText(rate)) + '</b></span><button class="btn sm" id="openCalc">Calculator</button></div>' +
+        '<div class="card"><div class="card-head"><h2>By category</h2><span class="badge">' + fams.length + (fams.length === 1 ? ' category' : ' categories') + '</span></div><div class="card-body tight">' +
+        (fams.length ? fams.map(function (f) {
+          return '<div class="row"><div class="who wrap"><b>' + esc(f.category) + '</b><small>Revenue ' + tk(f.revenue) + ' · Cost ' + tk(f.cost) + '</small></div>' +
+            '<div class="due-r"><span class="num ' + (f.profit >= 0 ? 'ok' : 'bad') + '">' + (f.profit >= 0 ? '+' : '−') + tk(Math.abs(f.profit)) + '</span>' +
+            '<span class="pill ' + (f.profit >= 0 ? 'ok' : 'bad') + '">' + f.marginPct + '% margin</span></div></div>';
+        }).join('') : '<div class="empty">No sales data recorded yet.</div>') +
+        '</div></div>';
+
+      if ($('#openCalc')) $('#openCalc').onclick = openRateCalculator;
+    });
+  };
+
+  // BOOK ─────────────────────────────────────────────────────────────
+  SCREENS.book = function (month) {
+    call('book', { month: month || '' }).then(function (r) {
+      if (!r.ok) return fail(r);
+      var b = r.data;
+      $('#pageSub').textContent = b.month;
+      $('#screen').innerHTML =
+        '<div class="field"><label for="bookMonth">Month</label><select id="bookMonth">' + b.months.map(function (m) { return '<option' + (m === b.month ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select></div>' +
+        summaryCard('Net this month', tk(b.net), b.net >= 0 ? 'ok' : 'bad', 'Closing balance ' + tk(b.closing),
+          [['Money in', tk(b.in), 'ok'], ['Money out', tk(b.out), 'bad']]) +
+        '<div class="actions"><button class="btn" id="addExpense">' + ic('plus', 'sm') + 'Expense</button><button class="btn" id="addPurchase">' + ic('plus', 'sm') + 'Account purchase</button></div>' +
+        '<div class="card"><div class="card-head"><h2>Entries</h2><span class="badge">' + b.entries.length + '</span></div><div class="card-body tight">' +
+        (b.entries.length ? b.entries.slice().reverse().map(function (e) {
+          return '<div class="row"><div class="who"><b>' + esc(e.label) + '</b><small>' + esc(e.date) + (e.method ? ' · ' + esc(e.method) : '') + '</small></div>' +
+            '<span class="num" style="color:' + (e.kind === 'in' ? 'var(--ok)' : 'var(--bad)') + '">' + (e.kind === 'in' ? '+' : '−') + tk(e.amount) + '</span></div>';
+        }).join('') : '<div class="empty">No entries this month yet.</div>') + '</div></div>' +
+        '<p class="muted-note">Opening balance includes ' + tk(b.legacyOpening) + ' collected before the app.</p>';
+      $('#bookMonth').onchange = function () { S.arg = this.value; SCREENS.book(this.value); };
+      $('#addExpense').onclick = openExpense;
+      $('#addPurchase').onclick = function () { openPurchase(); };
+    });
+  };
+
+  // MORE ─────────────────────────────────────────────────────────────
+  SCREENS.more = function () {
+    var L = S.lookups;
+    var stock = L.products.filter(function (p) { return p.category === 'Game Code'; }).map(function (p) {
+      return p.name + ': ' + L.codes.filter(function (c) { return c.productId === p.id; }).length;
+    }).join(' · ');
+    var free = L.accounts.reduce(function (a, x) { return a + Math.max(0, x.free); }, 0);
+    $('#screen').innerHTML = '<div class="card"><div class="card-body tight">' +
+      moreRow('suppliers', 'Suppliers & Markups', (L.suppliers ? L.suppliers.length : 0) + ' suppliers configured') +
+      moreRow('batches', 'Gift Cards & Batches', stock || 'On-demand placeholders & codes') +
+      moreRow('calc', 'Bybit USDT Calculator', rateText(L.rate)) +
+      moreRow('newProduct', 'New subscription / code product', 'Adds a product to the catalog') +
+      moreRow('accounts', 'Accounts', L.accounts.length + ' accounts · ' + free + ' free slots') +
+      moreRow('wallets', 'Wallets', 'Cards and bKash numbers you pay with') +
+      moreRow('codes', 'Game codes', stock || 'No code products') +
+      moreRow('settings', 'Settings', 'bKash number, reminder days, language') +
+      moreRow('undo', 'Undo last action', 'Reverses your last save') +
+      moreRow('signout', 'Sign out', 'Forget the password on this device') +
+      moreRow('export', 'Export all data', 'CSV files in a Drive folder') +
+      '</div></div>';
+    var map = { suppliers: openSuppliers, batches: openGiftCardBatches, calc: openRateCalculator,
+      newProduct: openProduct, accounts: openAccounts, wallets: openWallets, codes: openCodes, settings: openSettings,
+      signout: function () { try { localStorage.removeItem('sales_tracker_secret'); } catch (e) {} signInTried = false; loadData().then(function (r) { fail(r || { error: 'Failed to load.' }); }); },
+      undo: function () { call('undo', { requestId: rid() }).then(function (r) { toast(r.ok ? r.data.message : r.error); if (r.ok) refresh(); }); } };
+    $$('[data-more]', $('#screen')).forEach(function (el) {
+      el.onclick = function () {
+        var k = el.getAttribute('data-more');
+        if (k === 'export') { toast('Exporting…'); call('export', { requestId: rid() }).then(function (r) { if (!r.ok) return toast(r.error); toast('Exported to Drive'); window.open(r.data.url, '_blank', 'noopener'); }); return; }
+        if (map[k]) map[k]();
+      };
+    });
+  };
+  var MORE_ICON = { suppliers: 'truck', batches: 'tag', calc: 'exchange', newProduct: 'box', accounts: 'layers', wallets: 'card', codes: 'gamepad', settings: 'settings', undo: 'undo', signout: 'x-circle', export: 'download' };
+  function moreRow(key, title, sub) { return '<div class="row tap" data-more="' + key + '"><span class="avatar h1" style="border-radius:var(--r-sm)">' + ic(MORE_ICON[key] || 'grid', 'sm') + '</span><div class="who"><b>' + esc(title) + '</b><small>' + esc(sub) + '</small></div><span class="link">' + ic('chevron-right', 'sm') + '</span></div>'; }
+
+  // The API answers "Unauthorized" when the stored password is missing or wrong. Ask for it instead of showing a dead end.
+  var signInTried = false;
+  function signInScreen() {
+    $('#pageSub').textContent = '';
+    $('#screen').innerHTML = '<div class="card"><div class="card-head"><h2>' + ic('settings') + 'Sign in</h2></div><div class="card-body">' +
+      '<div class="field"><label for="appSecret">Panel password</label><input id="appSecret" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false"></div>' +
+      (signInTried ? '<div class="error-box" data-testid="signin-error">That password was not accepted.</div>' : '') +
+      '<button class="btn primary" id="signIn" data-testid="signin">Sign in</button>' +
+      '<p class="muted-note">Stored only in this browser. Sign out from More.</p></div></div>';
+    var input = $('#appSecret');
+    function go2() {
+      var v = input.value.trim();
+      if (!v) return;
+      try { localStorage.setItem('sales_tracker_secret', v); } catch (e) {}
+      signInTried = true;
+      $('#signIn').disabled = true;
+      loadData().then(function (x) { if (!x || !x.ok) return fail(x || { error: 'Failed to load.' }); signInTried = false; go('today'); });
+    }
+    $('#signIn').onclick = go2;
+    input.onkeydown = function (e) { if (e.key === 'Enter') go2(); };
+    input.focus();
+  }
+  function fail(r) {
+    if (r && r.error === 'Unauthorized') return signInScreen();
+    $('#screen').innerHTML = '<div class="error-box">' + esc(r.error) + '</div><br><button class="btn" id="retry">Try again</button>'; $('#retry').onclick = function () { refresh(); }; }
+
+  // ── Customer page ─────────────────────────────────────────────────
+  function openCustomer(id) {
+    var body = openSheet('Customer', '<div class="skeleton">Loading…</div>');
+    call('customer', { id: id }).then(function (r) {
+      if (!r.ok) { body.innerHTML = '<div class="error-box">' + esc(r.error) + '</div>'; return; }
+      var d = r.data, c = d.customer;
+      $('.sheet-top h2').textContent = c.Name;
+      body.innerHTML =
+        '<div class="card"><div class="card-body">' +
+        '<div class="row" style="padding:0"><div class="who"><b>Contact</b><small>' + esc(c.Channel ? c.Channel + ' · ' + c.Handle : 'not added yet') + '</small></div><button class="btn sm" id="editCust">Edit</button></div>' +
+        '<div class="row" style="padding:0"><div class="who"><b>Owes</b></div><span class="num" style="color:' + (d.owes ? 'var(--bad)' : 'inherit') + '">' + tk(d.owes) + '</span></div>' +
+        (d.credit > 0 ? '<div class="row" style="padding:0"><div class="who"><b>Credit</b><small>used on next renewal</small></div><span class="num" style="color:var(--ok)">' + tk(d.credit) + '</span></div>' : '') +
+        (c.Notes ? '<div class="muted-note">' + esc(c.Notes) + '</div>' : '') +
+        '</div></div>' +
+        '<div class="actions"><button class="btn primary" id="custPay">Got paid</button><button class="btn" id="custNew">New sale</button></div>' +
+        '<div class="card"><div class="card-head"><h2>Subscriptions</h2><span class="badge">' + d.lines.length + '</span></div><div class="card-body tight">' +
+        (d.lines.length ? d.lines.map(function (l) {
+          return '<div class="row" data-testid="line-' + esc(l.subCode) + '"><div class="who"><b>' + esc(l.productName) + '</b><small>' + esc(l.accountId || '') + ' · ref ' + esc(l.subCode) + ' · ' + (l.paidTill ? 'till ' + esc(l.paidTill) : 'no end') + (l.owes ? ' · owes ' + tk(l.owes) : '') + '</small></div>' +
+            '<div class="chips">' + daysPill(l.daysLeft) + (l.paidTill ? '<button class="btn sm primary" data-renew="' + esc(l.subCode) + '">Renew</button>' : '') + '<button class="link" data-editsale="' + l.saleId + '">Edit</button></div></div>';
+        }).join('') : '<div class="empty">No active subscriptions.</div>') + '</div></div>' +
+        '<div class="card"><div class="card-head"><h2>Payments</h2><span class="badge">' + d.payments.length + '</span></div><div class="card-body tight">' +
+        (d.payments.length ? d.payments.slice(0, 30).map(function (p) {
+          return '<div class="row"><div class="who"><b>' + (p.saleId === '' ? 'Credit' : 'Sale #' + esc(p.saleId)) + '</b><small>' + esc(p.date || 'before app') + (p.method ? ' · ' + esc(p.method) : '') + (p.trx ? ' · ' + esc(p.trx) : '') + '</small></div><span class="num">' + tk(p.amount) + '</span></div>';
+        }).join('') : '<div class="empty">No payments yet.</div>') + '</div></div>' +
+        (d.history.length ? '<details><summary>Older sales (' + d.history.length + ')</summary><div class="card" style="margin-top:8px"><div class="card-body tight">' + d.history.map(function (h) {
+          return '<div class="row"><div class="who"><b>#' + h.saleId + ' ' + esc(productShort(h.productName)) + '</b><small>' + esc(h.status) + ' · ' + esc(h.paidTill || '—') + ' · ' + tk(h.price) + ' × ' + esc(h.months) + '</small></div><button class="link" data-editsale="' + h.saleId + '">Edit</button></div>';
+        }).join('') + '</div></div></details>' : '');
+      $('#editCust', body).onclick = function () { openEditCustomer(c); };
+      $('#custPay', body).onclick = function () { openPay(c.Customer_ID); };
+      $('#custNew', body).onclick = function () { openNewSale({ customerId: c.Customer_ID }); };
+      $$('[data-renew]', body).forEach(function (b) { b.onclick = function () { openRenew(b.getAttribute('data-renew')); }; });
+      $$('[data-editsale]', body).forEach(function (b) {
+        b.onclick = function () { var sid = Number(b.getAttribute('data-editsale')); openEditSale(d.history.filter(function (h) { return h.saleId === sid; })[0]); };
+      });
+    });
+  }
+
+  // ── Sheet (slide-in panel) ────────────────────────────────────────
+  var sheetStack = [];
+  function openSheet(title, html) {
+    var el = document.createElement('div');
+    el.className = 'sheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', title);
+    el.innerHTML = '<header class="sheet-top"><button type="button" aria-label="Back">' + ic('chevron-left') + '</button><h2>' + esc(title) + '</h2></header><div class="sheet-body">' + html + '</div>';
+    $('#sheetHost').appendChild(el);
+    sheetStack.push(el);
+    $('button', el).onclick = closeSheet;
+    return $('.sheet-body', el);
+  }
+  function closeSheet() { var el = sheetStack.pop(); if (el) el.remove(); }
+  function closeAll() { while (sheetStack.length) closeSheet(); }
+
+  function saver(btn, errBox, action, build, after) {
+    var requestId = rid(), busy = false;
+    btn.onclick = function () {
+      if (busy) return;
+      var payload;
+      try { payload = build(); } catch (e) { errBox.innerHTML = '<div class="error-box">' + esc(e.message) + '</div>'; return; }
+      busy = true; btn.disabled = true; errBox.innerHTML = '';
+      payload.requestId = requestId;
+      call(action, payload).then(function (r) {
+        busy = false; btn.disabled = false;
+        if (!r.ok) { errBox.innerHTML = '<div class="error-box">' + esc(r.error) + '</div>'; return; }
+        requestId = rid();
+        closeAll();
+        toast(r.data && r.data.message || 'Saved', { undo: action !== 'remindSent' && action !== 'export' });
+        if (after) after(r.data);
+        refresh();
+      });
+    };
+  }
+
+  function num(v, label) {
+    if (String(v).trim() === '') return null;
+    var n = Number(String(v).replace(/[,৳\s]/g, ''));
+    if (!isFinite(n)) throw new Error(label + ' must be a number.');
+    return n;
+  }
+
+  // ── Customer picker ───────────────────────────────────────────────
+  function customerPicker(root, opts) {
+    var input = $('#cp', root), box = $('#cpList', root), chosen = null;
+    function draw() {
+      var q = input.value.trim().toLowerCase();
+      if (chosen && chosen.name.toLowerCase() === q) { box.innerHTML = ''; return; }
+      chosen = null; if (opts.onClear) opts.onClear();
+      if (!q) { box.innerHTML = ''; return; }
+      var hits = S.lookups.customers.filter(function (c) { return c.name.toLowerCase().indexOf(q) >= 0; }).slice(0, 6);
+      var exact = hits.some(function (c) { return c.name.toLowerCase() === q; });
+      box.innerHTML = '<div class="suggest" role="listbox">' + hits.map(function (c) {
+        return '<div role="option" data-id="' + esc(c.id) + '"><span>' + esc(c.name) + '</span><span class="small muted">' + (c.owes ? 'owes ' + tk(c.owes) : '') + '</span></div>';
+      }).join('') + (opts.onNew && !exact ? '<div role="option" data-new="1">Add new customer "' + esc(input.value.trim()) + '"</div>' : '') + '</div>';
+      $$('[role="option"]', box).forEach(function (o) {
+        o.onclick = function () {
+          if (o.getAttribute('data-new')) { box.innerHTML = ''; opts.onNew(input.value.trim()); return; }
+          chosen = customerById(o.getAttribute('data-id'));
+          input.value = chosen.name; box.innerHTML = '';
+          opts.onPick(chosen);
+        };
+      });
+    }
+    input.oninput = debounce(draw);
+    if (opts.preset) { chosen = customerById(opts.preset); if (chosen) { input.value = chosen.name; opts.onPick(chosen); } }
+    return { get: function () { return chosen; } };
+  }
+
+  function inboxOptions() {
+    var un = (S.home && S.home.unmatched) || [];
+    return '<option value="">— none —</option>' + un.map(function (u) { return '<option value="' + esc(u.trx) + '" data-amount="' + u.amount + '">' + tk(u.amount) + ' · ' + esc(u.trx) + '</option>'; }).join('');
+  }
+
+  // ── New sale ───────────────────────────────────────────────────────
+  function openNewSale(preset) {
+    preset = preset || {};
+    var L = S.lookups;
+    var body = openSheet('New sale',
+      '<div class="field"><span class="lbl">Product</span><div class="chip-row" id="prodChips">' + L.products.map(function (p) {
+        return '<button type="button" class="chip" aria-pressed="false" data-p="' + esc(p.id) + '">' + esc(p.name) + '</button>'; }).join('') + '</div></div>' +
+      '<div class="field" id="acctBox" hidden><span class="lbl" id="acctLabel">Account (emptiest first)</span><div class="chip-row" id="acctChips"></div><label class="small"><input type="checkbox" id="allowFull" style="width:auto"> Add to a full account anyway</label></div>' +
+      '<div class="field"><label for="cp">Customer</label><input id="cp" aria-label="Customer name" autocomplete="off" placeholder="Type a name"><div id="cpList"></div></div>' +
+      '<div id="newCust" hidden class="two"><div class="field"><label for="ncChannel">Contact via</label><select id="ncChannel"><option>WhatsApp</option><option>Messenger</option><option>Discord</option><option>Phone</option><option>Other</option></select></div>' +
+      '<div class="field"><label for="ncHandle">Number or username</label><input id="ncHandle" autocomplete="off"></div></div>' +
+      '<div class="field"><label for="profile">Profile / username on the account</label><input id="profile" autocomplete="off"></div>' +
+      '<div class="two"><div class="field"><label for="months">Months</label><div class="stepper"><button type="button" class="btn" id="mMinus" aria-label="−">−</button><input id="months" inputmode="numeric" value="1"><button type="button" class="btn" id="mPlus" aria-label="+">+</button></div></div>' +
+      '<div class="field"><label for="price">Price per month</label><input id="price" inputmode="decimal"></div></div>' +
+      '<div class="two"><div class="field"><label for="buyPrice">Buy cost (optional)</label><input id="buyPrice" inputmode="decimal" placeholder="0"></div>' +
+      '<div class="field"><label for="buyCurr">Buy currency</label><select id="buyCurr"><option>BDT</option><option>USDT</option></select></div></div>' +
+      '<div class="two"><div class="field"><label for="paidNow">Paid now</label><input id="paidNow" inputmode="decimal" placeholder="0"></div>' +
+      '<div class="field"><label for="method">Method</label><select id="method"><option>bKash</option><option>Nagad</option><option>Cash</option><option>Bank</option><option>Other</option></select></div></div>' +
+      '<div class="field"><label for="inboxPick">Payment from inbox (optional)</label><select id="inboxPick">' + inboxOptions() + '</select></div>' +
+      '<div class="note-box" data-testid="paid-till">Pick a product.</div><div id="err"></div><button class="btn primary" id="save">Save sale</button>');
+    var st = { product: null, account: null, code: null, customer: null, newName: '' };
+    function product() { return productById(st.product); }
+    function months() { return Math.max(1, Math.min(12, Number($('#months', body).value) || 1)); }
+    function summary() {
+      var p = product(), note = $('[data-testid="paid-till"]', body);
+      if (!p) { note.textContent = 'Pick a product.'; return; }
+      var price = Number($('#price', body).value) || 0, total = price * (p.category === 'Game Code' ? 1 : months());
+      var paid = Number($('#paidNow', body).value) || 0;
+      note.textContent = (p.category === 'Game Code' ? 'One code' : 'Paid till: ' + U.addCycle(S.today, months(), p.cycle)) + ' · total ' + tk(total) +
+        (paid < total ? ' · ' + tk(total - paid) + ' → Dues' : paid > total ? ' · ' + tk(paid - total) + ' as credit' : ' · paid in full');
+    }
+    function drawAccounts() {
+      var p = product(), box = $('#acctBox', body), chips = $('#acctChips', body);
+      box.hidden = false;
+      if (p.category === 'Game Code') {
+        $('#acctLabel', body).textContent = 'Code';
+        var codes = L.codes.filter(function (c) { return c.productId === p.id; });
+        st.code = codes.length ? codes[0].id : null; st.account = null;
+        chips.innerHTML = codes.length ? codes.slice(0, 12).map(function (c) { return '<button type="button" class="chip" data-testid="code-chip" aria-pressed="' + (c.id === st.code) + '" data-c="' + esc(c.id) + '">' + esc(c.id) + '</button>'; }).join('')
+          : '<span class="small muted">No codes in stock. Add under More, then Game codes.</span>';
+        $$('[data-c]', chips).forEach(function (b) { b.onclick = function () { st.code = b.getAttribute('data-c'); $$('[data-c]', chips).forEach(function (x) { x.setAttribute('aria-pressed', x === b); }); }; });
+        return;
+      }
+      $('#acctLabel', body).textContent = 'Account (emptiest first)';
+      var all = L.accounts.filter(function (a) { return a.productId === p.id && a.status === 'Active'; });
+      var allowFull = $('#allowFull', body).checked;
+      var shown = all.filter(function (a) { return a.free > 0 || allowFull; });
+      if (!shown.some(function (a) { return a.id === st.account; })) st.account = shown.length ? shown[0].id : null;
+      st.code = null;
+      chips.innerHTML = shown.map(function (a) {
+        return '<button type="button" class="chip" data-testid="account-chip" aria-pressed="' + (a.id === st.account) + '" data-a="' + esc(a.id) + '">' + esc(a.id) + ' · ' + (a.free > 0 ? a.free + ' free' : 'full') + '</button>';
+      }).join('') + (shown.length ? '' : '<span class="small muted">Every ' + esc(p.name) + ' account is full. </span>') + '<button type="button" class="link" id="addAcct">+ Add account</button>';
+      $$('[data-a]', chips).forEach(function (b) { b.onclick = function () { st.account = b.getAttribute('data-a'); drawAccounts(); }; });
+      $('#addAcct', body).onclick = function () { openAddAccount(p.id); };
+    }
+    $$('[data-p]', body).forEach(function (b) {
+      b.onclick = function () {
+        st.product = b.getAttribute('data-p');
+        $$('[data-p]', body).forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+        $('#price', body).value = product().price;
+        drawAccounts(); summary();
+      };
+    });
+    $('#allowFull', body).onchange = drawAccounts;
+    customerPicker(body, {
+      preset: preset.customerId,
+      onPick: function (c) { st.customer = c; st.newName = ''; $('#newCust', body).hidden = true; },
+      onNew: function (name) { st.customer = null; st.newName = name; $('#newCust', body).hidden = false; $('#ncHandle', body).focus(); },
+      onClear: function () { st.customer = null; st.newName = ''; $('#newCust', body).hidden = true; }
+    });
+    $('#mMinus', body).onclick = function () { $('#months', body).value = Math.max(1, months() - 1); summary(); };
+    $('#mPlus', body).onclick = function () { $('#months', body).value = Math.min(12, months() + 1); summary(); };
+    ['#months', '#price', '#paidNow'].forEach(function (s) { $(s, body).oninput = summary; });
+    $('#inboxPick', body).onchange = function () { var o = this.selectedOptions[0]; if (o && o.getAttribute('data-amount')) { $('#paidNow', body).value = o.getAttribute('data-amount'); $('#method', body).value = 'bKash'; } summary(); };
+    saver($('#save', body), $('#err', body), 'newSale', function () {
+      if (!st.product) throw new Error('Pick a product.');
+      var paid = num($('#paidNow', body).value, 'Paid now');
+      var trx = $('#inboxPick', body).value;
+      var buyCurr = $('#buyCurr', body).value;
+      var buyVal = $('#buyPrice', body).value.trim();
+      var p = { productId: st.product, accountId: st.account || '', codeId: st.code || '', profile: $('#profile', body).value,
+        months: Number($('#months', body).value), price: num($('#price', body).value, 'Price'), allowFull: $('#allowFull', body).checked,
+        buyCurrency: buyCurr,
+        buyPriceUSDT: buyCurr === 'USDT' && buyVal ? Number(buyVal) : '' };
+      if (st.customer) p.customerId = st.customer.id;
+      else if (st.newName) p.newCustomer = { name: st.newName, channel: $('#ncChannel', body).value, handle: $('#ncHandle', body).value };
+      if (paid) p.paidNow = { amount: paid, method: $('#method', body).value, trxId: trx };
+      return p;
+    });
+    if (preset.productId) { var pb = body.querySelector('[data-p="' + preset.productId + '"]'); if (pb) pb.click(); }
+  }
+
+  // ── Got paid ───────────────────────────────────────────────────────
+  function openPay(arg) {
+    var preset = typeof arg === 'object' && arg ? arg : { customerId: arg };
+    var body = openSheet('Got paid',
+      '<div class="field"><label for="cp">Customer</label><input id="cp" aria-label="Customer name" autocomplete="off" placeholder="Type a name"><div id="cpList"></div></div>' +
+      '<div id="dueBox"></div>' +
+      '<div class="two"><div class="field"><label for="amount">Amount</label><input id="amount" inputmode="decimal"></div>' +
+      '<div class="field"><label for="method">Method</label><select id="method"><option>bKash</option><option>Nagad</option><option>Cash</option><option>Bank</option><option>Other</option></select></div></div>' +
+      '<div class="field"><label for="inboxPick">Payment from inbox (optional)</label><select id="inboxPick">' + inboxOptions() + '</select></div>' +
+      '<div class="field"><label for="trx">Transaction ID (optional)</label><input id="trx" autocomplete="off"></div>' +
+      '<p class="muted-note">Part payment? Enter less — rest stays in Dues. Extra is kept as credit.</p>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save payment</button>');
+    var st = { customer: null, saleId: preset.saleId ? String(preset.saleId) : '' };
+    if (preset.amount) $('#amount', body).value = preset.amount;
+    function showDues(c) {
+      call('customer', { id: c.id }).then(function (r) {
+        if (!r.ok) return;
+        var d = r.data;
+        var pick = st.saleId;
+        $('#dueBox', body).innerHTML = '<div class="card"><div class="card-head"><h2>' + esc(c.name) + '</h2><span class="badge">owes ' + tk(d.owes) + '</span></div><div class="card-body tight">' +
+          (d.dues.length ? '<label class="row tap"><span>Oldest dues first</span><input type="radio" name="target" value=""' + (pick ? '' : ' checked') + ' style="width:auto"></label>' + d.dues.map(function (x) {
+            var line = d.history.filter(function (h) { return h.saleId === x.saleId; })[0] || {};
+            return '<label class="row tap"><span>#' + x.saleId + ' ' + esc(productShort(line.productName)) + ' · ' + tk(x.balance) + '</span><input type="radio" name="target" value="' + x.saleId + '"' + (String(x.saleId) === pick ? ' checked' : '') + ' style="width:auto"></label>';
+          }).join('') : '<div class="empty">Nothing owed. Money goes to credit.</div>') + '</div></div>';
+        if (!$('#amount', body).value && d.owes) $('#amount', body).value = d.owes;
+        $$('input[name="target"]', body).forEach(function (r) { r.onchange = function () { st.saleId = this.value; }; });
+      });
+    }
+    customerPicker(body, { preset: preset.customerId, onPick: function (c) { st.customer = c; showDues(c); }, onClear: function () { st.customer = null; $('#dueBox', body).innerHTML = ''; } });
+    $('#inboxPick', body).onchange = function () { var o = this.selectedOptions[0]; if (o && o.getAttribute('data-amount')) { $('#amount', body).value = o.getAttribute('data-amount'); $('#trx', body).value = this.value; $('#method', body).value = 'bKash'; } };
+    saver($('#save', body), $('#err', body), 'pay', function () {
+      if (!st.customer) throw new Error('Pick a customer.');
+      var amt = num($('#amount', body).value, 'Amount');
+      if (!amt) throw new Error('Enter the amount.');
+      return { customerId: st.customer.id, amount: amt, method: $('#method', body).value, trxId: $('#trx', body).value.trim(), saleId: st.saleId };
+    });
+  }
+
+  // ── Renew ─────────────────────────────────────────────────────────
+  function openRenew(subCode) {
+    var L = S.lookups;
+    var body = openSheet('Renew',
+      '<div class="field"><label for="lineSearch">Customer or reference</label><div class="search-box"><input id="lineSearch" autocomplete="off" placeholder="Name or code like N44"></div><div id="lineList"></div></div>' +
+      '<div id="lineInfo"></div>' +
+      '<div class="two"><div class="field"><label for="months">Months</label><div class="stepper"><button type="button" class="btn" id="mMinus" aria-label="−">−</button><input id="months" inputmode="numeric" value="1"><button type="button" class="btn" id="mPlus" aria-label="+">+</button></div></div>' +
+      '<div class="field"><label for="price">Price per month</label><input id="price" inputmode="decimal"></div></div>' +
+      '<div class="two"><div class="field"><label for="paidNow">Paid now</label><input id="paidNow" inputmode="decimal" placeholder="0"></div>' +
+      '<div class="field"><label for="method">Method</label><select id="method"><option>bKash</option><option>Nagad</option><option>Cash</option><option>Bank</option><option>Other</option></select></div></div>' +
+      '<div class="field"><label for="inboxPick">Payment from inbox (optional)</label><select id="inboxPick">' + inboxOptions() + '</select></div>' +
+      '<div class="note-box" data-testid="paid-till">Pick who is renewing.</div><div id="err"></div><button class="btn primary" id="save">Save renewal</button>');
+    var st = { line: null };
+    function months() { return Math.max(1, Math.min(12, Number($('#months', body).value) || 1)); }
+    function summary() {
+      if (!st.line) return;
+      var p = productById(st.line.productId) || { cycle: 30 };
+      var grace = Number(L.settings.grace_days) || 3;
+      var start = U.renewalStart(st.line.paidTill, S.today, grace);
+      $('[data-testid="paid-till"]', body).textContent = 'Paid till: ' + U.addCycle(start, months(), p.cycle) + ' (from ' + start + ') · total ' + tk((Number($('#price', body).value) || 0) * months());
+    }
+    function pick(line) {
+      st.line = line;
+      $('#lineSearch', body).value = line.name + ' · ' + line.subCode; $('#lineList', body).innerHTML = '';
+      $('#lineInfo', body).innerHTML = '<div class="card"><div class="card-body"><div class="row" style="padding:0"><div class="who"><b>' + esc(line.name) + '</b><small>' + esc(line.productName) + ' · ' + esc(line.accountId) + ' · ref ' + esc(line.subCode) + '</small></div>' + daysPill(line.daysLeft) + '</div></div></div>';
+      $('#price', body).value = line.price; summary();
+    }
+    $('#lineSearch', body).oninput = debounce(function () {
+      var q = this.value.trim().toLowerCase(); st.line = null;
+      var hits = q ? L.lines.filter(function (l) { return l.name.toLowerCase().indexOf(q) >= 0 || l.subCode.toLowerCase() === q; }).slice(0, 8) : [];
+      $('#lineList', body).innerHTML = hits.length ? '<div class="suggest" role="listbox">' + hits.map(function (l) {
+        return '<div role="option" data-sc="' + esc(l.subCode) + '"><span>' + esc(l.name) + ' · ' + esc(productShort(l.productName)) + '</span><span class="small muted">' + esc(l.subCode) + ' · ' + esc(l.paidTill || '') + '</span></div>';
+      }).join('') + '</div>' : '';
+      $$('[data-sc]', $('#lineList', body)).forEach(function (o) { o.onclick = function () { pick(L.lines.filter(function (l) { return l.subCode === o.getAttribute('data-sc'); })[0]); }; });
+    });
+    $('#mMinus', body).onclick = function () { $('#months', body).value = Math.max(1, months() - 1); summary(); };
+    $('#mPlus', body).onclick = function () { $('#months', body).value = Math.min(12, months() + 1); summary(); };
+    ['#months', '#price'].forEach(function (s) { $(s, body).oninput = summary; });
+    $('#inboxPick', body).onchange = function () { var o = this.selectedOptions[0]; if (o && o.getAttribute('data-amount')) { $('#paidNow', body).value = o.getAttribute('data-amount'); $('#method', body).value = 'bKash'; } };
+    if (subCode) { var l = L.lines.filter(function (x) { return x.subCode === subCode; })[0]; if (l) pick(l); }
+    saver($('#save', body), $('#err', body), 'renew', function () {
+      if (!st.line) throw new Error('Pick who is renewing.');
+      var p = { subCode: st.line.subCode, months: Number($('#months', body).value), price: num($('#price', body).value, 'Price') };
+      var paid = num($('#paidNow', body).value, 'Paid now');
+      if (paid) p.paidNow = { amount: paid, method: $('#method', body).value, trxId: $('#inboxPick', body).value };
+      return p;
+    });
+  }
+
+  // ── Match inbox ───────────────────────────────────────────────────
+  function openMatch(trx) {
+    var u = (S.home.unmatched || []).filter(function (x) { return x.trx === trx; })[0];
+    var body = openSheet('Match payment',
+      '<div class="card"><div class="card-body"><div class="row" style="padding:0"><div class="who"><b>' + tk(u.amount) + ' from ' + esc(u.sender) + '</b><small>' + esc(u.trx) + ' · ' + esc(u.received) + '</small></div></div></div></div>' +
+      '<details><summary>Show the SMS</summary><p class="muted-note" style="padding:0 16px 8px">' + esc(u.sms) + '</p></details>' +
+      '<div class="field"><label for="cp">Customer</label><input id="cp" aria-label="Customer name" autocomplete="off"><div id="cpList"></div></div>' +
+      '<div class="field"><label for="lineSel">Renew a subscription (optional)</label><select id="lineSel"><option value="">Just record the payment</option></select></div>' +
+      '<p class="muted-note">Dues are paid first. If enough is left for a full month it renews.</p>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save match</button>');
+    var st = { customer: null };
+    customerPicker(body, { onPick: function (c) {
+      st.customer = c;
+      $('#lineSel', body).innerHTML = '<option value="">Just record the payment</option>' + S.lookups.lines.filter(function (l) { return l.customerId === c.id; }).map(function (l) {
+        return '<option value="' + esc(l.subCode) + '">' + esc(productShort(l.productName)) + ' · ' + esc(l.subCode) + ' · ' + tk(l.price) + '/month</option>'; }).join('');
+    } });
+    saver($('#save', body), $('#err', body), 'match', function () {
+      if (!st.customer) throw new Error('Pick a customer.');
+      return { trx: trx, customerId: st.customer.id, subCode: $('#lineSel', body).value };
+    });
+  }
+
+  // ── Edit customer ─────────────────────────────────────────────────
+  function openEditCustomer(c) {
+    var body = openSheet('Edit customer',
+      '<div class="field"><label for="eName">Name</label><input id="eName" value="' + esc(c.Name) + '"></div>' +
+      '<div class="two"><div class="field"><label for="eChannel">Contact via</label><select id="eChannel">' + ['', 'WhatsApp', 'Messenger', 'Discord', 'Phone', 'Other'].map(function (o) {
+        return '<option' + (o === c.Channel ? ' selected' : '') + ' value="' + o + '">' + (o || '—') + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="eHandle">Number or username</label><input id="eHandle" value="' + esc(c.Handle) + '"></div></div>' +
+      '<div class="field"><label for="eNotes">Notes</label><textarea id="eNotes" rows="3">' + esc(c.Notes) + '</textarea></div>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save changes</button>');
+    saver($('#save', body), $('#err', body), 'edit', function () {
+      return { kind: 'customer', id: c.Customer_ID, values: { Name: $('#eName', body).value, Channel: $('#eChannel', body).value, Handle: $('#eHandle', body).value, Notes: $('#eNotes', body).value } };
+    });
+  }
+
+  // ── Edit sale ─────────────────────────────────────────────────────
+  function openEditSale(h) {
+    var accts = S.lookups.accounts.filter(function (a) { return a.productId === h.productId; });
+    var cycle = (productById(h.productId) || { cycle: 30 }).cycle;
+    var body = openSheet('Edit sale #' + h.saleId,
+      '<p class="muted-note">' + esc(h.productName) + ' · ref ' + esc(h.subCode) + '</p>' +
+      '<div class="field"><label for="sProfile">Profile / username</label><input id="sProfile" value="' + esc(h.profile) + '"></div>' +
+      (accts.length ? '<div class="field"><label for="sAccount">Account</label><select id="sAccount">' + accts.map(function (a) { return '<option' + (a.id === h.accountId ? ' selected' : '') + '>' + esc(a.id) + '</option>'; }).join('') + '</select></div>' : '') +
+      '<div class="two"><div class="field"><label for="sPrice">Price per month</label><input id="sPrice" inputmode="decimal" value="' + esc(h.price) + '"></div>' +
+      '<div class="field"><label for="sMonths">Months</label><input id="sMonths" inputmode="numeric" value="' + esc(h.months) + '"></div></div>' +
+      '<div class="two"><div class="field"><label for="sTill">Paid till</label><input id="sTill" type="date" value="' + esc(h.paidTill) + '"></div>' +
+      '<div class="field"><label for="sStatus">Status</label><select id="sStatus">' + ['Active', 'Renewed', 'Refunded', 'Void'].map(function (o) { return '<option' + (o === h.status ? ' selected' : '') + '>' + o + '</option>'; }).join('') + '</select></div></div>' +
+      '<label class="small"><input type="checkbox" id="sMoveTill" style="width:auto"> Move Paid till when Months changes</label>' +
+      '<p class="small muted-note" id="tillNote"></p>' +
+      '<p class="muted-note">Void = entered by mistake. Refunded = money returned. Both remove from totals; nothing is deleted.</p>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save changes</button>');
+    function syncTill() {
+      var want = U.suggestPaidTill(h.paidTill, h.months, Number($('#sMonths', body).value), cycle);
+      if ($('#sMoveTill', body).checked && want) $('#sTill', body).value = want;
+      $('#tillNote', body).textContent = !h.paidTill ? 'This sale has no end date.'
+        : want && $('#sTill', body).value !== want && !$('#sMoveTill', body).checked
+          ? 'Paid till and Months do not agree. Tick above to move the date, or set it by hand.' : '';
+    }
+    $('#sMonths', body).oninput = syncTill;
+    $('#sMoveTill', body).onchange = syncTill;
+    syncTill();
+    saver($('#save', body), $('#err', body), 'edit', function () {
+      var v = {}, price = num($('#sPrice', body).value, 'Price'), months = num($('#sMonths', body).value, 'Months');
+      if ($('#sProfile', body).value !== (h.profile || '')) v.Contact = $('#sProfile', body).value;
+      if ($('#sAccount', body) && $('#sAccount', body).value !== h.accountId) v.Account_ID = $('#sAccount', body).value;
+      if (price !== h.price) v.Unit_Price = price;
+      if (months !== Number(h.months)) v.Months = months;
+      if ($('#sTill', body).value !== (h.paidTill || '')) v.Paid_Till = $('#sTill', body).value;
+      if ($('#sStatus', body).value !== h.status) v.Record_Status = $('#sStatus', body).value;
+      if (!Object.keys(v).length) throw new Error('Nothing changed.');
+      return { kind: 'sale', id: h.saleId, values: v };
+    });
+  }
+
+  // ── Money out ─────────────────────────────────────────────────────
+  function walletOptions() { return S.lookups.wallets.map(function (w) { return '<option value="' + esc(w.id) + '">' + esc(w.label) + ' (' + esc(w.id) + ')</option>'; }).join(''); }
+  function openExpense() {
+    var body = openSheet('Add expense',
+      '<div class="two"><div class="field"><label for="xCat">Category</label><select id="xCat">' + S.lookups.expenseCategories.map(function (c) { return '<option>' + c + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="xAmt">Amount</label><input id="xAmt" inputmode="decimal"></div></div>' +
+      '<div class="two"><div class="field"><label for="xDate">Date</label><input id="xDate" type="date" value="' + S.today + '"></div>' +
+      '<div class="field"><label for="xWallet">Paid with</label><select id="xWallet">' + walletOptions() + '</select></div></div>' +
+      '<div class="field"><label for="xNote">Note</label><input id="xNote"></div><div id="err"></div><button class="btn primary" id="save">Save expense</button>');
+    saver($('#save', body), $('#err', body), 'addExpense', function () {
+      return { category: $('#xCat', body).value, amount: num($('#xAmt', body).value, 'Amount'), date: $('#xDate', body).value, paidWith: $('#xWallet', body).value, note: $('#xNote', body).value };
+    });
+  }
+  function openPurchase(accountId) {
+    var body = openSheet('Account purchase',
+      '<div class="field"><label for="uAcct">Account</label><select id="uAcct">' + S.lookups.accounts.map(function (a) { return '<option' + (a.id === accountId ? ' selected' : '') + ' value="' + esc(a.id) + '">' + esc(a.id) + ' · ' + esc(a.label) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="two"><div class="field"><label for="uAmt">Amount paid</label><input id="uAmt" inputmode="decimal"></div><div class="field"><label for="uWallet">Paid with</label><select id="uWallet">' + walletOptions() + '</select></div></div>' +
+      '<div class="two"><div class="field"><label for="uDate">Date</label><input id="uDate" type="date" value="' + S.today + '"></div><div class="field"><label for="uTill">Covers until</label><input id="uTill" type="date"></div></div>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save purchase</button>');
+    var setAmt = function () { var a = S.lookups.accounts.filter(function (x) { return x.id === $('#uAcct', body).value; })[0]; if (a && !$('#uAmt', body).value) $('#uAmt', body).value = a.cost; }; $('#uAcct', body).onchange = function () { $('#uAmt', body).value = ''; setAmt(); }; setAmt();
+    saver($('#save', body), $('#err', body), 'addPurchase', function () {
+      return { accountId: $('#uAcct', body).value, amount: num($('#uAmt', body).value, 'Amount'), paidWith: $('#uWallet', body).value, date: $('#uDate', body).value, coversUntil: $('#uTill', body).value };
+    });
+  }
+
+  // ── More ──────────────────────────────────────────────────────────
+  function openProduct() {
+    var body = openSheet('New product',
+      '<div class="field"><label for="pName">Name</label><input id="pName" placeholder="e.g. Disney+"></div>' +
+      '<div class="two"><div class="field"><label for="pCat">Type</label><select id="pCat"><option>Subscription</option><option>Game Code</option></select></div>' +
+      '<div class="field"><label for="pLetter">Reference letter</label><input id="pLetter" maxlength="1" placeholder="D"></div></div>' +
+      '<div id="subFields"><div class="two"><div class="field"><label for="pCycle">Renews every (days)</label><input id="pCycle" inputmode="numeric" value="30"></div>' +
+      '<div class="field"><label for="pSlots">People per account</label><input id="pSlots" inputmode="numeric" value="5"></div></div>' +
+      '<div class="field"><label for="pCost">One account costs</label><input id="pCost" inputmode="decimal"></div></div>' +
+      '<div class="field"><label for="pPrice">Your usual price per person</label><input id="pPrice" inputmode="decimal"></div>' +
+      '<p class="muted-note">Letters in use: ' + esc(S.lookups.products.map(function (p) { return p.letter; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) + '</p>' +
+      '<div id="err"></div><button class="btn primary" id="save">Create product</button>');
+    $('#pCat', body).onchange = function () { $('#subFields', body).hidden = this.value !== 'Subscription'; };
+    saver($('#save', body), $('#err', body), 'addProduct', function () {
+      return { name: $('#pName', body).value, category: $('#pCat', body).value, letter: $('#pLetter', body).value, cycleDays: num($('#pCycle', body).value, 'Days'),
+        slots: num($('#pSlots', body).value, 'People per account'), accountCost: num($('#pCost', body).value, 'Account cost'), price: num($('#pPrice', body).value, 'Price') };
+    });
+  }
+  function openAccounts() {
+    var body = openSheet('Accounts', '<button class="btn primary" id="addA" style="margin-bottom:8px">+ Add account</button>' + S.lookups.products.filter(function (p) { return p.category !== 'Game Code'; }).map(function (p) {
+      var list = S.lookups.accounts.filter(function (a) { return a.productId === p.id; });
+      return '<div class="card" style="margin-bottom:10px"><div class="card-head"><h2>' + esc(p.name) + '</h2><span class="badge">' + list.length + '</span></div><div class="card-body tight">' + list.map(function (a) {
+        return '<div class="row"><div class="who"><b>' + esc(a.id) + ' · ' + esc(a.label) + '</b><small>' + tk(a.cost) + ' · ' + (a.slots - Math.max(0, a.free)) + ' of ' + a.slots + ' used' + (a.status !== 'Active' ? ' · ' + esc(a.status) : '') + '</small></div><button class="btn sm" data-pur="' + esc(a.id) + '">Renewed it</button></div>';
+      }).join('') + '</div></div>';
+    }).join(''));
+    $('#addA', body).onclick = function () { openAddAccount(); };
+    $$('[data-pur]', body).forEach(function (b) { b.onclick = function () { openPurchase(b.getAttribute('data-pur')); }; });
+  }
+  function openAddAccount(productId) {
+    var body = openSheet('Add account',
+      '<div class="field"><label for="aProd">Product</label><select id="aProd">' + S.lookups.products.filter(function (p) { return p.category !== 'Game Code'; }).map(function (p) { return '<option value="' + esc(p.id) + '"' + (p.id === productId ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="aLabel">Label (login email, never the password)</label><input id="aLabel" autocomplete="off"></div>' +
+      '<div class="two"><div class="field"><label for="aCost">It cost</label><input id="aCost" inputmode="decimal"></div><div class="field"><label for="aSlots">People it holds</label><input id="aSlots" inputmode="numeric"></div></div>' +
+      '<div class="two"><div class="field"><label for="aWallet">Paid with</label><select id="aWallet">' + walletOptions() + '</select></div><div class="field"><label for="aTill">Renews on</label><input id="aTill" type="date"></div></div>' +
+      '<div id="err"></div><button class="btn primary" id="save">Add account</button>');
+    saver($('#save', body), $('#err', body), 'addAccount', function () {
+      return { productId: $('#aProd', body).value, label: $('#aLabel', body).value, cycleCost: num($('#aCost', body).value, 'Cost'), slots: num($('#aSlots', body).value, 'People'), paidWith: $('#aWallet', body).value, renewalDate: $('#aTill', body).value };
+    });
+  }
+  function openWallets() {
+    var body = openSheet('Wallets', '<div class="card" style="margin-bottom:10px"><div class="card-body tight">' + S.lookups.wallets.map(function (w) { return '<div class="row"><div class="who"><b>' + esc(w.label) + '</b><small>' + esc(w.id) + '</small></div></div>'; }).join('') + '</div></div>' +
+      '<div class="card"><div class="card-head"><h2>Add a wallet</h2></div><div class="card-body">' +
+      '<div class="field"><label for="wLabel">Name</label><input id="wLabel" placeholder="e.g. City Bank card"></div>' +
+      '<div class="two"><div class="field"><label for="wType">Type</label><select id="wType">' + S.lookups.walletTypes.map(function (t) { return '<option>' + t + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="wLast">Last 4 digits</label><input id="wLast" inputmode="numeric" maxlength="4"></div></div>' +
+      '<div id="err"></div><button class="btn primary" id="save">Add wallet</button></div></div>');
+    saver($('#save', body), $('#err', body), 'addWallet', function () { return { label: $('#wLabel', body).value, type: $('#wType', body).value, last4: $('#wLast', body).value }; });
+  }
+  function openSuppliers() {
+    var L = S.lookups;
+    var sups = L.suppliers || [];
+    var body = openSheet('Suppliers',
+      '<button class="btn primary" id="addSup" style="margin-bottom:8px">+ Add supplier</button>' +
+      '<div class="card"><div class="card-head"><h2>Suppliers & Markups</h2><span class="badge">' + sups.length + '</span></div><div class="card-body tight">' +
+      (sups.length ? sups.map(function (s) {
+        return '<div class="row"><div class="who"><b>' + esc(s.name) + ' (' + esc(s.currency) + ')</b><small>' + (s.contact ? esc(s.contact) + ' · ' : '') + 'Markup: ' + s.markupPercent + '%' + (s.notes ? ' · ' + esc(s.notes) : '') + '</small></div>' +
+          '<div class="chips"><span class="num">' + s.markupPercent + '%</span>' +
+          '<button class="btn sm" data-sup-edit="' + esc(s.id) + '">Edit</button>' +
+          '<button class="btn sm" data-sup-del="' + esc(s.id) + '">Delete</button></div></div>';
+      }).join('') : '<div class="empty">No suppliers configured yet.</div>') +
+      '</div></div>');
+    $('#addSup', body).onclick = function () { openAddSupplier(); };
+    $$('[data-sup-edit]', body).forEach(function (b) { b.onclick = function () { openEditSupplier(b.getAttribute('data-sup-edit')); }; });
+    $$('[data-sup-del]', body).forEach(function (b) {
+      b.onclick = function () {
+        var s = sups.filter(function (x) { return x.id === b.getAttribute('data-sup-del'); })[0];
+        if (!s || !window.confirm('Delete supplier ' + s.name + '?')) return;
+        call('deleteSupplier', { supplierId: s.id, requestId: rid() }).then(function (r) {
+          if (!r.ok) { toast(r.error); return; }
+          closeAll(); toast(r.data && r.data.message || 'Deleted', { undo: true }); refresh();
+        });
+      };
+    });
+  }
+
+  function openEditSupplier(id) {
+    var s = (S.lookups.suppliers || []).filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    var body = openSheet('Edit supplier',
+      '<div class="field"><label for="sName">Supplier name</label><input id="sName" value="' + esc(s.name) + '"></div>' +
+      '<div class="two"><div class="field"><label for="sCurr">Currency</label><select id="sCurr"><option' + (s.currency === 'BDT' ? ' selected' : '') + '>BDT</option><option' + (s.currency === 'USDT' ? ' selected' : '') + '>USDT</option></select></div>' +
+      '<div class="field"><label for="sMarkup">Markup %</label><input id="sMarkup" inputmode="decimal" value="' + esc(s.markupPercent) + '"></div></div>' +
+      '<div class="field"><label for="sContact">Contact (Telegram/WhatsApp)</label><input id="sContact" value="' + esc(s.contact) + '"></div>' +
+      '<div class="field"><label for="sNotes">Notes</label><input id="sNotes" value="' + esc(s.notes) + '"></div>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save changes</button>');
+    saver($('#save', body), $('#err', body), 'editSupplier', function () {
+      return { supplierId: id, name: $('#sName', body).value, currency: $('#sCurr', body).value,
+               markupPercent: Number($('#sMarkup', body).value) || 0, contact: $('#sContact', body).value, notes: $('#sNotes', body).value };
+    });
+  }
+
+  function openAddSupplier() {
+    var body = openSheet('Add supplier',
+      '<div class="field"><label for="sName">Supplier name</label><input id="sName" placeholder="e.g. Bybit P2P Vendor X"></div>' +
+      '<div class="two"><div class="field"><label for="sCurr">Currency</label><select id="sCurr"><option>BDT</option><option>USDT</option></select></div>' +
+      '<div class="field"><label for="sMarkup">Markup %</label><input id="sMarkup" inputmode="decimal" placeholder="0"></div></div>' +
+      '<div class="field"><label for="sContact">Contact (Telegram/WhatsApp)</label><input id="sContact"></div>' +
+      '<div class="field"><label for="sNotes">Notes</label><input id="sNotes"></div>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save supplier</button>');
+    saver($('#save', body), $('#err', body), 'addSupplier', function () {
+      return {
+        name: $('#sName', body).value,
+        currency: $('#sCurr', body).value,
+        markupPercent: Number($('#sMarkup', body).value) || 0,
+        contact: $('#sContact', body).value,
+        notes: $('#sNotes', body).value
+      };
+    });
+  }
+
+  function openGiftCardBatches() {
+    var prods = S.lookups.products.filter(function (p) { return p.category === 'Game Code'; });
+    var body = openSheet('Gift Cards & Batches',
+      '<div class="actions" style="margin-bottom:8px">' +
+      '<button class="btn primary" id="addBatchBtn">+ On-Demand Batch</button>' +
+      '<button class="btn" id="addCodeBtn">+ Add Codes</button>' +
+      '</div>' +
+      '<div class="card" style="margin-bottom:10px"><div class="card-head"><h2>Stock by Product</h2></div><div class="card-body tight">' +
+      (prods.length ? prods.map(function (p) {
+        var stock = S.lookups.codes.filter(function (c) { return c.productId === p.id; }).length;
+        return '<div class="row"><b>' + esc(p.name) + '</b><span class="num">' + stock + ' in stock</span></div>';
+      }).join('') : '<div class="empty">No game code products.</div>') +
+      '</div></div>' +
+      '<div class="card"><div class="card-head"><h2>Batches</h2><span class="badge">' + (S.lookups.batches || []).length + '</span></div><div class="card-body tight">' +
+      ((S.lookups.batches || []).length ? S.lookups.batches.map(function (b) {
+        return '<div class="row"><div class="who"><b>' + esc(b.tag) + '</b><small>' + esc(b.id) + ' · ' + b.total + ' codes · ' + b.pending + ' pending · ' + b.sold + ' sold</small></div>' +
+          '<div class="chips"><button class="btn sm" data-batch-edit="' + esc(b.id) + '">Rename</button>' +
+          '<button class="btn sm" data-batch-del="' + esc(b.id) + '">Delete</button></div></div>';
+      }).join('') : '<div class="empty">No batches yet.</div>') +
+      '</div></div>');
+    $$('[data-batch-edit]', body).forEach(function (b) { b.onclick = function () { openEditBatch(b.getAttribute('data-batch-edit')); }; });
+    $$('[data-batch-del]', body).forEach(function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute('data-batch-del');
+        if (!window.confirm('Delete batch ' + id + ' and all its codes?')) return;
+        call('deleteBatch', { batchId: id, requestId: rid() }).then(function (r) {
+          if (!r.ok) { toast(r.error); return; }
+          closeAll(); toast(r.data && r.data.message || 'Deleted', { undo: true }); refresh();
+        });
+      };
+    });
+    $('#addBatchBtn', body).onclick = openAddBatch;
+    $('#addCodeBtn', body).onclick = openCodes;
+  }
+
+  function openEditBatch(id) {
+    var b = (S.lookups.batches || []).filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var body = openSheet('Rename batch',
+      '<div class="field"><label for="bTag">Batch tag</label><input id="bTag" value="' + esc(b.tag) + '"></div>' +
+      '<div id="err"></div><button class="btn primary" id="save">Save</button>');
+    saver($('#save', body), $('#err', body), 'editBatch', function () { return { batchId: id, tag: $('#bTag', body).value }; });
+  }
+
+  function openAddBatch() {
+    var prods = S.lookups.products.filter(function (p) { return p.category === 'Game Code'; });
+    var body = openSheet('Create On-Demand Batch',
+      '<div class="field"><label for="bProd">Product</label><select id="bProd">' + prods.map(function (p) { return '<option value="' + esc(p.id) + '">' + esc(p.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="two"><div class="field"><label for="bQty">Quantity (placeholders)</label><input id="bQty" inputmode="numeric" value="5"></div>' +
+      '<div class="field"><label for="bTag">Batch / Supplier tag</label><input id="bTag" placeholder="e.g. Bybit-Oct26"></div></div>' +
+      '<p class="muted-note">Creates pending placeholders for on-demand fulfillment.</p>' +
+      '<div id="err"></div><button class="btn primary" id="save">Generate Batch</button>');
+    saver($('#save', body), $('#err', body), 'addCodesBatch', function () {
+      return {
+        productId: $('#bProd', body).value,
+        quantity: Number($('#bQty', body).value) || 1,
+        batchId: $('#bTag', body).value
+      };
+    });
+  }
+
+  function openRateCalculator() {
+    var rateObj = S.lookups && S.lookups.rate, rate = rateObj && rateObj.rate;
+    var body = openSheet('USDT to BDT Calculator',
+      '<div class="card" style="margin-bottom:12px"><div class="card-body">' +
+      '<div class="row" style="padding:0"><div class="who"><b>Bybit P2P Live Rate</b><small>' + (rate ? (rateObj.source === 'manual' ? 'Manual rate' : rateObj.stale ? 'Stale: older than 5 minutes' : 'Updated within 5 minutes') : 'No rate yet. Set one in Settings.') + '</small></div><span class="num ' + (rate && !rateObj.stale ? 'ok' : 'bad') + '">' + esc(rateText(rateObj)) + '</span></div>' +
+      '</div></div>' +
+      '<div class="field"><label for="calcUsdt">USDT Amount</label><input id="calcUsdt" inputmode="decimal" placeholder="10.00"></div>' +
+      '<div class="field"><label for="calcBdt">BDT Equivalent</label><input id="calcBdt" inputmode="decimal" placeholder="1235.00"></div>' +
+      '<p class="muted-note">Enter USDT to see BDT, or BDT to see USDT at current exchange rate.</p>');
+    var uIn = $('#calcUsdt', body), bIn = $('#calcBdt', body);
+    if (!rate) { uIn.disabled = true; bIn.disabled = true; }
+    uIn.oninput = function () {
+      var val = Number(uIn.value) || 0;
+      bIn.value = val > 0 ? (Math.round(val * rate * 100) / 100).toFixed(2) : '';
+    };
+    bIn.oninput = function () {
+      var val = Number(bIn.value) || 0;
+      uIn.value = val > 0 ? (Math.round(val / rate * 100) / 100).toFixed(2) : '';
+    };
+  }
+
+  function openCodes() {
+    var prods = S.lookups.products.filter(function (p) { return p.category === 'Game Code'; });
+    var body = openSheet('Game codes', '<div class="card" style="margin-bottom:10px"><div class="card-body tight">' + prods.map(function (p) {
+      return '<div class="row"><b>' + esc(p.name) + '</b><span class="num">' + S.lookups.codes.filter(function (c) { return c.productId === p.id; }).length + ' in stock</span></div>'; }).join('') + '</div></div>' +
+      '<div class="field"><label for="cProd">Add codes to</label><select id="cProd">' + prods.map(function (p) { return '<option value="' + esc(p.id) + '">' + esc(p.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="cCodes">Codes, one per line</label><textarea id="cCodes" rows="6"></textarea></div><div id="err"></div><button class="btn primary" id="save">Add codes</button>');
+    saver($('#save', body), $('#err', body), 'addCodes', function () { return { productId: $('#cProd', body).value, codes: $('#cCodes', body).value.split(/\r?\n/) }; });
+  }
+  function openSettings() {
+    var s = S.lookups.settings;
+    var body = openSheet('Settings',
+      '<div class="field"><label for="tBkash">Your bKash number (goes in reminders)</label><input id="tBkash" inputmode="tel" value="' + esc(s.bkash_number) + '"></div>' +
+      '<div class="field"><label for="tPayBase">Payment page base URL (e.g. https://pay.yourdomain.com or blank for default)</label><input id="tPayBase" type="url" placeholder="https://..." value="' + esc(s.pay_base_url || '') + '"></div>' +
+      '<div class="field"><label for="tUsdt">Manual USDT rate in BDT (blank = live Bybit rate)</label><input id="tUsdt" inputmode="decimal" value="' + esc(s.usdt_bdt_manual || '') + '"></div>' +
+      '<div class="field"><label for="tLang">Reminder language</label><select id="tLang"><option value="en"' + (s.language !== 'bn' ? ' selected' : '') + '>English</option><option value="bn"' + (s.language === 'bn' ? ' selected' : '') + '>বাংলা</option></select></div>' +
+      '<div class="two"><div class="field"><label for="tBefore">Remind days before</label><input id="tBefore" inputmode="numeric" value="' + esc(s.reminder_days_before) + '"></div>' +
+      '<div class="field"><label for="tAfter">Remind days after</label><input id="tAfter" inputmode="numeric" value="' + esc(s.reminder_days_after) + '"></div></div>' +
+      '<div class="two"><div class="field"><label for="tDue">Due reminder every (days)</label><input id="tDue" inputmode="numeric" value="' + esc(s.due_reminder_every_days) + '"></div>' +
+      '<div class="field"><label for="tGrace">Renewal grace (days)</label><input id="tGrace" inputmode="numeric" value="' + esc(s.grace_days) + '"></div></div>' +
+      '<p class="muted-note">Changes apply to new reminders straight away.</p><div id="err"></div><button class="btn primary" id="save">Save settings</button>');
+    saver($('#save', body), $('#err', body), 'settings', function () {
+      var b = $('#tBkash', body).value.replace(/\D/g, '');
+      if (b && !/^01\d{9}$/.test(b)) throw new Error('bKash number must look like 01XXXXXXXXX.');
+      var payBase = $('#tPayBase', body).value.trim().replace(/\/+$/, '');
+      return { values: { bkash_number: b, pay_base_url: payBase, usdt_bdt_manual: $('#tUsdt', body).value.trim(), language: $('#tLang', body).value, reminder_days_before: num($('#tBefore', body).value, 'Days before'),
+        reminder_days_after: num($('#tAfter', body).value, 'Days after'), due_reminder_every_days: num($('#tDue', body).value, 'Due days'), grace_days: num($('#tGrace', body).value, 'Grace days') } };
+    });
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────
+  loadData().then(function (r) { if (!r || !r.ok) return fail(r || { error: 'Failed to load.' }); go('today'); });
+})();
+</script>
+</body>
+</html>
