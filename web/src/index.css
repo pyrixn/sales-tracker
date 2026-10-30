@@ -1,0 +1,209 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Night Ledger. One dominant colour (warm ink in the dark, paper in the light) and one sharp
+ * accent (lime). Money-in reads as the accent; owed and overdue read as coral; soon reads as amber.
+ * Every colour is a variable here. Components use the Tailwind names below, never raw hex.
+ */
+:root {
+  --radius: 0.75rem;
+  --background: #f2efe6;
+  --foreground: #14160f;
+  --card: #faf8f2;
+  --card-foreground: #14160f;
+  --popover: #fdfcf8;
+  --popover-foreground: #14160f;
+  --primary: #151a0b;
+  --primary-foreground: #d6f54a;
+  --secondary: #e8e4d8;
+  --secondary-foreground: #14160f;
+  --muted: #e8e4d8;
+  --muted-foreground: #5d6153;
+  --accent: #dfe9b4;
+  --accent-foreground: #1b2306;
+  --destructive: #b8341d;
+  --border: rgb(20 22 15 / 0.12);
+  --input: rgb(20 22 15 / 0.2);
+  --ring: #5f7a0a;
+  --ok: #2a6f3a;
+  --warn: #8c5205;
+  --bad: #a52b16;
+  --lime: #5f7a0a;
+  --glow: rgb(150 190 20 / 0.16);
+  --shimmer: rgb(20 22 15 / 0.07);
+  --chart-1: var(--lime);
+  --chart-2: var(--ok);
+  --chart-3: var(--warn);
+  --chart-4: var(--bad);
+  --chart-5: var(--muted-foreground);
+  --density: 1;
+  --grain-opacity: 0.05;
+}
+
+.dark {
+  --background: #080906;
+  --foreground: #ecefe2;
+  --card: #0f110c;
+  --card-foreground: #ecefe2;
+  --popover: #12150e;
+  --popover-foreground: #ecefe2;
+  --primary: #cdf03c;
+  --primary-foreground: #121705;
+  --secondary: #171a11;
+  --secondary-foreground: #ecefe2;
+  --muted: #171a11;
+  --muted-foreground: #9ba091;
+  --accent: #1d2412;
+  --accent-foreground: #e6f6a4;
+  --destructive: #ff7a63;
+  --border: rgb(236 239 226 / 0.1);
+  --input: rgb(236 239 226 / 0.16);
+  --ring: #cdf03c;
+  --ok: #7ee08f;
+  --warn: #f5bd45;
+  --bad: #ff7a63;
+  --lime: #cdf03c;
+  --glow: rgb(205 240 60 / 0.09);
+  --shimmer: rgb(236 239 226 / 0.09);
+  --chart-1: var(--lime);
+  --chart-2: var(--ok);
+  --chart-3: var(--warn);
+  --chart-4: var(--bad);
+  --chart-5: var(--muted-foreground);
+  --grain-opacity: 0.035;
+}
+
+/* Compact density (uplift 5.3): theme-init.js and the Settings toggle set data-density on <html>. Compact applies at md and up
+   only, so a phone row keeps its 64px touch height. Row (kit.jsx) and the DataTable cells multiply their heights and padding by --density. */
+@media (min-width: 768px) {
+  html[data-density="compact"] { --density: 0.82; }
+}
+
+@theme inline {
+  --font-sans: "Bricolage Grotesque Variable", "Noto Sans Bengali", sans-serif;
+  --font-display: "Fraunces Variable", "Noto Sans Bengali", serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-lime: var(--lime);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --text-micro: 0.6875rem;
+  --animate-rise: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { color-scheme: light; -webkit-text-size-adjust: 100%; }
+  html.dark { color-scheme: dark; }
+  /* Touch phones: no browser pull-to-reload or bounce at the top; the app's own pull to refresh (lib/pullToRefresh.js) replaces it. */
+  @media (pointer: coarse) { html { overscroll-behavior-y: contain; } }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-variant-numeric: tabular-nums;
+    min-height: 100dvh;
+    background-image:
+      radial-gradient(60rem 36rem at 8% -10%, var(--glow), transparent 60%),
+      radial-gradient(40rem 28rem at 105% 8%, var(--glow), transparent 65%);
+    background-attachment: fixed;
+  }
+  ::selection { background: var(--primary); color: var(--primary-foreground); }
+  button, [role="button"], a, select, summary { touch-action: manipulation; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-ring; }
+}
+
+@layer components {
+  .display { font-family: var(--font-display); font-optical-sizing: auto; font-variation-settings: "SOFT" 40, "WONK" 0; }
+  .hero-figure { @apply font-display; font-weight: 200; letter-spacing: -0.04em; line-height: 0.9; }
+  .page-title { @apply font-display; font-weight: 800; letter-spacing: -0.035em; line-height: 0.95; }
+  .eyebrow { @apply font-mono text-micro uppercase text-muted-foreground; letter-spacing: 0.14em; }
+  .money { @apply font-mono; font-feature-settings: "zero" 1; }
+  /* Film grain. Put on one element only (body or the hero card). Noise is an inline SVG, which the CSP img-src data: allows. */
+  .grain { position: relative; }
+  .grain::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    opacity: var(--grain-opacity); mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Soft pointer spotlight for one hero card per screen. --mx and --my are set from a pointer handler with
+     element.style.setProperty: the one place a dynamic value is allowed, because CSS cannot read the pointer. */
+  .spotlight { position: relative; }
+  @media (hover: hover) {
+    .spotlight::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; opacity: 0;
+      background: radial-gradient(20rem circle at var(--mx, 50%) var(--my, 0%), var(--glow), transparent 70%);
+      transition: opacity 200ms var(--ease-out, ease-out);
+    }
+    .spotlight:hover::before { opacity: 1; }
+  }
+  /* Shine border (components/fx/ShineBorder.jsx): a 1px ring whose lime highlight sweeps round the edge. The highlight is
+     transparent except in its middle, and the mask keeps only the ring. Paused by data-paused when the tab is hidden. */
+  .shine-border {
+    position: absolute; inset: 0; padding: 1px; border-radius: inherit; pointer-events: none; opacity: 0.5;
+    background: linear-gradient(105deg, transparent 40%, var(--lime) 50%, transparent 60%) 100% 0 / 300% 100% no-repeat;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    animation: shine-sweep 5s linear infinite;
+  }
+  .shine-border[data-paused="true"] { animation-play-state: paused; }
+  /* Route progress (AppShell, while a screen's chunk loads): a 2px lime line across the top, moved with transform only. */
+  .route-progress {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; pointer-events: none;
+    background: var(--lime); transform-origin: 0 50%;
+    animation: route-progress 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+}
+
+@keyframes shine-sweep {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
+}
+
+@keyframes route-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(0.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  .route-progress { animation: none; transform: none; }   /* a static thin line */
+}

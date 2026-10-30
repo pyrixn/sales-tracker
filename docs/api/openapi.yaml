@@ -1,0 +1,502 @@
+openapi: 3.1.0
+info:
+  title: Sales Tracker public API
+  version: 1.0.0
+  summary: Products, website orders, order status, a customer's own lines, and signed webhooks.
+  description: |
+    Version 1 of the public API, served by the Supabase Edge Function `api` under `/v1/`. Every call needs an API key
+    (`Authorization: Bearer st_live_...`) with the scope for that route. A browser call also needs its site (the `Origin`
+    header) to be one the key lists. Calls from a server carry no `Origin` and need no site list.
+
+    Call it from your server (Next.js Route Handlers, Server Components, or a backend), never from browser code: a key in a
+    browser is a key anyone can copy. Errors are JSON `{ "ok": false, "code": "...", "error": "..." }` with a stable `code`.
+
+    Rate limits: 60 calls a minute per key; 20 POST and 120 GET calls a minute per IP. Over the limit: 429 with `Retry-After`.
+  contact:
+    name: Sales Tracker owner
+servers:
+  - url: https://{project}.supabase.co/functions/v1/api
+    description: Your Supabase project. The Edge Function name `api` is part of the path.
+    variables:
+      project:
+        default: your-project-ref
+security:
+  - bearerKey: []
+tags:
+  - name: Catalog
+  - name: Orders
+  - name: Portal
+paths:
+  /v1/products:
+    get:
+      tags: [Catalog]
+      operationId: listProducts
+      summary: The public catalog
+      description: Products on the website, in sort order then name. Needs the `catalog:read` scope. It is cacheable. Send `If-None-Match` with the ETag to get 304 when nothing changed.
+      security:
+        - bearerKey: []
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: The catalog.
+          headers:
+            ETag:
+              schema: { type: string }
+            Cache-Control:
+              schema: { type: string, example: 'private, max-age=60' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductList' }
+        '304':
+          description: Unchanged since the ETag you sent.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /v1/products/{slug}:
+    get:
+      tags: [Catalog]
+      operationId: getProduct
+      summary: One public product by its web address
+      description: Needs the `catalog:read` scope. A product that is not on the website is not found.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string, example: netflix }
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: The product.
+          headers:
+            ETag:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, product]
+                properties:
+                  ok: { type: boolean, const: true }
+                  product: { $ref: '#/components/schemas/Product' }
+        '304':
+          description: Unchanged since the ETag you sent.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /v1/orders:
+    post:
+      tags: [Orders]
+      operationId: createOrder
+      summary: Place an order and get its pay link
+      description: |
+        Needs the `orders:write` scope. Creates the order and its pay link (the customer pays the link with bKash, Nagad or
+        Upay, and the tracker matches the payment). Send `Idempotency-Key` with a value unique to this checkout: a repeat with
+        the same key and the same body returns the same order (200, header `Idempotent-Replayed: true`); the same key with a
+        different body is 422. The `price` must be the public price you showed, or the order is refused with `price_changed`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderRequest' }
+            example:
+              product: netflix
+              months: 2
+              price: 320
+              customer: { name: Rahim Uddin, contact: '01711111111', channel: WhatsApp }
+              note: Gift for a friend
+      responses:
+        '201':
+          description: 'The order was made. Keep `token`: it is the only way to read the order''s status later.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderCreated' }
+        '200':
+          description: A repeat of an order already made with this Idempotency-Key (same body).
+          headers:
+            Idempotent-Replayed:
+              schema: { type: string, enum: ['true'] }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderCreated' }
+        '400':
+          description: No Idempotency-Key header, or the body is not JSON.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No product on sale has that web address.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: 'The price changed since the customer saw it (`code: price_changed`). Show the price again and retry with the new one.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422':
+          description: |
+            The body is not valid (`code: validation_failed`, with `errors` listing each field), the Idempotency-Key was used
+            with another body (`idempotency_conflict`), or the order rules refuse it (for example `not_public`, `no_price`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /v1/orders/{id}:
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      summary: An order's status, for the customer who placed it
+      description: Needs the `orders:read` scope and the `token` that the order was created with. A wrong id or token is not found. The answer has no contact details.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, example: O-00007 }
+        - name: token
+          in: query
+          required: true
+          description: The `token` from the order's creation. It appears in the URL, so keep this call on your server.
+          schema: { type: string }
+      responses:
+        '200':
+          description: The order.
+          headers:
+            Cache-Control:
+              schema: { type: string, example: no-store }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, order]
+                properties:
+                  ok: { type: boolean, const: true }
+                  order: { $ref: '#/components/schemas/Order' }
+        '400':
+          description: 'No token given (`code: token_required`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /v1/portal/{token}:
+    get:
+      tags: [Portal]
+      operationId: getPortal
+      summary: A customer's own lines, from the pay token of one of their subscriptions
+      description: |
+        Needs the `portal:read` scope. The token is the pay token of one sale (the link the customer already has). The answer
+        lists the lines of that customer only: product, paid till, and what is still owed. Nothing else about the customer.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string, minLength: 16 }
+      responses:
+        '200':
+          description: The customer's lines.
+          headers:
+            Cache-Control:
+              schema: { type: string, example: no-store }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, portal]
+                properties:
+                  ok: { type: boolean, const: true }
+                  portal: { $ref: '#/components/schemas/Portal' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+webhooks:
+  order.created:
+    post:
+      summary: An order was placed
+      description: Sent to each endpoint that subscribed to `order.created`. Verify `X-Signature` against the raw body before you trust it.
+      operationId: orderCreatedEvent
+      parameters:
+        - $ref: '#/components/parameters/XSignature'
+        - $ref: '#/components/parameters/XEventId'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '2XX': { description: Received. Any 2xx stops the retries. }
+        '4XX': { description: Refused. The tracker retries with backoff, up to 8 tries. }
+  order.paid:
+    post:
+      summary: An order was marked paid
+      operationId: orderPaidEvent
+      parameters:
+        - $ref: '#/components/parameters/XSignature'
+        - $ref: '#/components/parameters/XEventId'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '2XX': { description: Received. }
+  subscription.renewed:
+    post:
+      summary: A subscription was renewed
+      operationId: subscriptionRenewedEvent
+      parameters:
+        - $ref: '#/components/parameters/XSignature'
+        - $ref: '#/components/parameters/XEventId'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '2XX': { description: Received. }
+  subscription.ended:
+    post:
+      summary: A subscription line was ended
+      operationId: subscriptionEndedEvent
+      parameters:
+        - $ref: '#/components/parameters/XSignature'
+        - $ref: '#/components/parameters/XEventId'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '2XX': { description: Received. }
+components:
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: An API key made under More > API keys in the panel. Shown once when made.
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: A value unique to this order attempt, 8 to 128 letters, digits, `-` or `_`. Repeat it only to retry the same order.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+        pattern: '^[A-Za-z0-9_-]{8,128}$'
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: The ETag from an earlier answer. The answer is 304 when nothing changed.
+      schema: { type: string }
+    XSignature:
+      name: X-Signature
+      in: header
+      required: true
+      description: 't=<unix seconds>,v1=<hex HMAC-SHA256(secret, t + "." + raw body)>. Reject a t more than 300 seconds from your clock, and compare in constant time.
+      schema: { type: string }
+    XEventId:
+      name: X-Event-Id
+      in: header
+      required: true
+      description: 'The event id. The same event can arrive more than once (a retry after a slow answer): dedupe on this id.'
+      schema: { type: string }
+  responses:
+    Unauthorized:
+      description: 'No key, a malformed key, an unknown key, or a revoked key (`code: unauthorized`).'
+      headers:
+        WWW-Authenticate:
+          schema: { type: string, example: Bearer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: The site is not allowed for this key (`origin_not_allowed`), or the key lacks the scope (`insufficient_scope`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not found (`not_found`, or `product_not_found` for an order).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Too many calls (`rate_limited`). Wait for the seconds in Retry-After.
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [ok, code, error]
+      properties:
+        ok: { type: boolean, const: false }
+        code:
+          type: string
+          enum:
+            - unauthorized
+            - origin_not_allowed
+            - insufficient_scope
+            - rate_limited
+            - not_found
+            - product_not_found
+            - method_not_allowed
+            - idempotency_key_required
+            - invalid_json
+            - token_required
+            - idempotency_conflict
+            - validation_failed
+            - price_changed
+            - price_missing
+            - not_public
+            - no_price
+            - server_error
+        error:
+          type: string
+          description: A message for a person. Show it or log it; do not match on it.
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            errors:
+              type: array
+              items: { type: string }
+    Money:
+      type: number
+      description: Amount in BDT (Taka), two decimals.
+    Product:
+      type: object
+      required: [slug, name, description, public_price, currency, available, image_path]
+      properties:
+        slug: { type: string, example: netflix }
+        name: { type: string, example: Netflix }
+        description: { type: string }
+        public_price:
+          $ref: '#/components/schemas/Money'
+          description: The price for one month. Send it back as `price` when you order.
+        currency: { type: string, const: BDT }
+        available:
+          type: boolean
+          description: 'Whether a seat or a code is free now. Not a promise: the order can still be refused if it sells out.'
+        image_path:
+          type: string
+          description: A storage path for the product image, such as products/netflix.png, or empty.
+    ProductList:
+      type: object
+      required: [ok, products]
+      properties:
+        ok: { type: boolean, const: true }
+        products:
+          type: array
+          items: { $ref: '#/components/schemas/Product' }
+    OrderRequest:
+      type: object
+      additionalProperties: false
+      required: [product, price, customer]
+      properties:
+        product:
+          type: string
+          description: The product's web address (slug).
+        months:
+          type: integer
+          minimum: 1
+          maximum: 12
+          default: 1
+        price:
+          $ref: '#/components/schemas/Money'
+          description: The price per month the customer saw. Checked against the current price.
+        customer:
+          type: object
+          additionalProperties: false
+          required: [name, contact]
+          properties:
+            name: { type: string, maxLength: 120 }
+            contact:
+              type: string
+              maxLength: 120
+              description: A phone number or email, so the tracker can reach the customer.
+            channel:
+              type: string
+              maxLength: 40
+              description: How the contact is reached, such as WhatsApp.
+        note:
+          type: string
+          maxLength: 500
+    Order:
+      type: object
+      required: [id, status, created, product, months, total, currency, payment]
+      properties:
+        id: { type: string, example: O-00007 }
+        status:
+          type: string
+          enum: [New, AwaitingPayment, Paid, Fulfilled, Cancelled]
+        created: { type: string, format: date-time }
+        product:
+          type: object
+          nullable: true
+          properties:
+            slug: { type: string }
+            name: { type: string }
+        months: { type: integer }
+        total: { $ref: '#/components/schemas/Money' }
+        currency: { type: string, const: BDT }
+        payment:
+          type: object
+          properties:
+            status:
+              type: string
+              description: The pay link's status (Open, Paid, Cancelled, Expired).
+            url:
+              type: string
+              description: The pay link to show the customer.
+    OrderCreated:
+      type: object
+      required: [ok, order, token]
+      properties:
+        ok: { type: boolean, const: true }
+        order: { $ref: '#/components/schemas/Order' }
+        token:
+          type: string
+          description: Keep this. It is the customer's key to the order status (`GET /v1/orders/{id}?token=`).
+    Portal:
+      type: object
+      required: [lines, owes, currency]
+      properties:
+        lines:
+          type: array
+          items:
+            type: object
+            required: [product, paid_till, owes]
+            properties:
+              product: { type: string }
+              paid_till: { type: string, description: 'YYYY-MM-DD, or empty.' }
+              owes: { $ref: '#/components/schemas/Money' }
+        owes: { $ref: '#/components/schemas/Money' }
+        currency: { type: string, const: BDT }
+    WebhookEvent:
+      type: object
+      required: [id, type, created, data]
+      properties:
+        id:
+          type: string
+          description: The event id (also in X-Event-Id). Dedupe on it.
+        type:
+          type: string
+          enum: [order.created, order.paid, subscription.renewed, subscription.ended]
+        created:
+          type: integer
+          description: Unix seconds when the event was made.
+        data:
+          type: object
+          description: 'For order events: orderId, status, source, months, total and product (slug, name). For subscription events: saleId and subCode (renewed) or saleId (ended). No contact details.'
+          additionalProperties: true
